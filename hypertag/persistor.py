@@ -194,6 +194,16 @@ class Persistor:
         )
         data = self.c.fetchall()
         return data
+    
+    def get_leave_tag_ids(self):
+        self.c.execute(
+            """
+            SELECT tag_id, name FROM tags WHERE tag_id NOT IN
+            (SELECT parent_tag_id FROM tags_tags)
+            """
+        )
+        data = self.c.fetchall()
+        return data
 
     def get_tag_id_children_ids_names(self, parent_tag_id):
         self.c.execute(
