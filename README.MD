@@ -30,10 +30,17 @@ Metatag tag/s to create tag hierarchies
 
 ```$ hypertag metatag human with animal```
 
-### Query by tag
-Prints all file names associated with tag.
+### Query using Set Theory
+Prints file names matching the query. Nesting is currently not supported, queries are evaluated from left to right.
 
-```$ hypertag query human```
+Default operand is AND (intersection): <br>
+```$ hypertag query human "Homo Sapiens"```
+
+OR (union): <br>
+```$ hypertag query human or "Homo Sapiens"```
+
+MINUS (difference): <br>
+```$ hypertag query human minus "Homo Sapiens"```
 
 ### Print all tags
 
@@ -44,6 +51,6 @@ Prints all file names associated with tag.
 ```$ hypertag show files```
 
 ## Architecture
-- Python 3.8 powers HyperTag.
-- SQLite3 serves as the meta data storage engine.
-- Symbolic links are used to create the HyperTagFS directory structure.
+- Python 3.8 powers HyperTag
+- SQLite3 serves as the meta data storage engine
+- Symbolic links are used to create the HyperTagFS directory structure
