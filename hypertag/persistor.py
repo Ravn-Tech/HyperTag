@@ -353,5 +353,5 @@ class Persistor:
             """,
             [tag_name],
         )
-        data = self.c.fetchall()
+        data = [e[0] for e in self.c.fetchall()]
         return data

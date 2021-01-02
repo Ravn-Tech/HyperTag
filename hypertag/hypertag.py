@@ -94,12 +94,30 @@ class HyperTag():
         if not names:
             print("Nothing to show...")
 
-    def query(self, query):
-        """ Find files by tag.
-            query: string
+    def query(self, *query):
+        """ Query files using set operands.
+            Supported operands:
+              - and : intersection (default)
+              - or : union
+              - minus : difference
         """
-        for name in self._db.get_files_by_tag(query):
-            print(name[0])
+        # TODO: Parse AST to support queries with brackets
+        operands = {"and", "or", "minus"}
+        results = set(self._db.get_files_by_tag(query[0]))
+        current_operand = None
+        for query_symbol in query[1:]:
+            if query_symbol not in operands:
+                file_names = set(self._db.get_files_by_tag(query_symbol))                    
+                if current_operand == "or":
+                    results = results.union(file_names)
+                elif current_operand == "minus":
+                    results = results - file_names
+                else:
+                    # and (intersection) is default operand
+                    results = results.intersection(file_names)
+            else:
+                current_operand = query_symbol
+        return results
 
     def tag(self, *args, remount=True, add=True, commit=True):
         """ Tag file/s with tag/s """
