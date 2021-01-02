@@ -3,6 +3,18 @@ name = "hypertag"
 version = "0.1.0"
 description = "File organization made easy using tags"
 authors = ["Sean <sean-p-96@hotmail.de>"]
+license = "MIT"
+homepage = "https://github.com/SeanPedersen/HyperTag"
+repository = "https://github.com/SeanPedersen/HyperTag"
+keywords = ["tag", "file", "organization"]
+classifiers = [
+    "Environment :: Console",
+    "Framework :: Fire",
+    "Operating System :: Linux",
+]
+include = [
+    "LICENSE",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
