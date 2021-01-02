@@ -45,14 +45,22 @@ class HyperTag():
 
     def import_tags(self, import_path):
         """ Imports files with tags from existing directory hierarchy """
-        file_paths = list(Path(import_path).rglob("*"))
-        file_paths = [p for p in file_paths if not str(p).split("/")[-2].startswith(".")]
-        file_paths = [p for p in file_paths if p.is_file()]
+        file_paths = [p for p in list(Path(import_path).rglob("*")) if p.is_file()]
+        # Remove files in hidden directories
+        visible_file_paths = []
+        for p in file_paths:
+            is_hidden = False
+            for pp in str(p).split("/"):
+                if pp.startswith("."):
+                    is_hidden = True
+            if not is_hidden:
+                visible_file_paths.append(p)
+        
         print("Adding files...")
-        self.add(*file_paths)
+        self.add(*visible_file_paths)
         import_path_dirs = set(str(import_path).split("/"))
         print("Adding tags...")
-        for file_path in tqdm(file_paths):
+        for file_path in tqdm(visible_file_paths):
             file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][:-1]
             self.tag(file_path.name, "with", *file_path_tags, remount=False, add=False, commit=False)
             for previous, current in zip(file_path_tags, file_path_tags[1:]):
