@@ -22,6 +22,7 @@ class HyperTag():
     def mount(self, root_dir, parent_tag_id=None):
         """ Add file system tag representation using symlinks """
         if parent_tag_id is None:
+            print("Building HyperTagFS...")
             rmtree(self.root_dir)
             tag_ids_names = self._db.get_root_tag_ids_names()
         else:
@@ -55,7 +56,6 @@ class HyperTag():
                     is_hidden = True
             if not is_hidden:
                 visible_file_paths.append(p)
-        
         print("Adding files...")
         self.add(*visible_file_paths)
         import_path_dirs = set(str(import_path).split("/"))
