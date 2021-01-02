@@ -28,13 +28,13 @@ class HyperTag():
         else:
             tag_ids_names = self._db.get_tag_id_children_ids_names(parent_tag_id)
 
-        leave_tag_ids = {tag_id[0] for tag_id in self._db.get_leaf_tag_ids()}
+        leaf_tag_ids = {tag_id[0] for tag_id in self._db.get_leaf_tag_ids()}
         root_path = Path(root_dir)
         for tag_id, name in tag_ids_names:
             file_paths_names = self._db.get_file_paths_names_by_tag_id(tag_id)
             root_tag_path = root_path / name
             symlink_path = root_tag_path
-            if tag_id not in leave_tag_ids:
+            if tag_id not in leaf_tag_ids:
                 os.makedirs(root_tag_path / "_files", exist_ok=True)
                 symlink_path = (root_tag_path  / "_files")
             elif len(file_paths_names) > 0:
