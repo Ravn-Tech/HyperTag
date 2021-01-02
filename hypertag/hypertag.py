@@ -54,10 +54,11 @@ class HyperTag():
         print("Adding tags...")
         for file_path in tqdm(file_paths):
             file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][:-1]
-            self.tag(file_path.name, "with", *file_path_tags, remount=False, add=False)
+            self.tag(file_path.name, "with", *file_path_tags, remount=False, add=False, commit=False)
             for previous, current in zip(file_path_tags, file_path_tags[1:]):
-                self.metatag(current, "with", previous, remount=False)
+                self.metatag(current, "with", previous, remount=False, commit=False)
             #print(file_path_tags, file_path.name)
+        self._db.conn.commit()
         self.mount(self.root_dir)
 
     def add(self, *file_paths):
@@ -70,6 +71,7 @@ class HyperTag():
                     added += 1
             except sqlite3.IntegrityError as _ex:
                 pass
+        self._db.conn.commit()
         print("Added", added, "new file/s")
 
     def show(self, mode="tags"):
@@ -90,7 +92,7 @@ class HyperTag():
         for name in self._db.get_files_by_tag(query):
             print(name[0])
 
-    def tag(self, *args, remount=True, add=True):
+    def tag(self, *args, remount=True, add=True, commit=True):
         """ Tag file/s with tag/s """
         # Parse arguments
         file_names = []
@@ -112,11 +114,13 @@ class HyperTag():
             for tag in tags:
                 self._db.add_tag_to_file(file_name, tag)
             #print("Tagged", file_name, "with", tags)
+        if commit:
+            self._db.conn.commit()
         # Remount (everything is mounted TODO: make it lazy)
         if remount:
             self.mount(self.root_dir)
 
-    def metatag(self, *args, remount=True):
+    def metatag(self, *args, remount=True, commit=True):
         """ Tag tag/s with tag/s """
         # Parse arguments
         parent_tags = []
@@ -136,7 +140,8 @@ class HyperTag():
             for parent_tag in parent_tags:
                 self._db.add_parent_tag_to_tag(parent_tag, tag)
             #print("MetaTagged", tag, "with", parent_tags)
-        
+        if commit:
+            self._db.conn.commit()
         # Remount (everything is mounted TODO: make it lazy)
         if remount:
             self.mount(self.root_dir)
