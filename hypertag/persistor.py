@@ -17,7 +17,7 @@ class Persistor:
             "Videos": ["mp4", "gif", "webm", "avi", "mkv"],
             "Documents": ["txt", "md", "rst", "pdf", "epub", "doc", "docx"],
             "Source Code": ["sh", "py", "pyx", "ipynb", "c", "h", "cpp", "rs", "erl", "ex", "js", "ts", "css", "html", "sql"],
-            "Configs": ["yml", "xml", "conf", "ini", "toml", "json"],
+            "Configs": ["yml", "xml", "conf", "ini", "toml", "json", "lock"],
             "Archives": ["zip", "gz", "tar"],
             "Blobs": ["pyc", "so", "o"],
         }
@@ -167,7 +167,6 @@ class Persistor:
         file_group = self.file_types_groups.get(file_type)
         if file_group:
             self.add_tag_to_file(file_name, file_group)
-        self.conn.commit()
 
     def add_tag(self, name: str):
         self.c.execute(
@@ -179,7 +178,6 @@ class Persistor:
             """,
             [name],
         )
-        self.conn.commit()
         self.c.execute(
             """
             SELECT tag_id FROM tags WHERE name LIKE ?
@@ -235,7 +233,6 @@ class Persistor:
             """,
             (file_id, tag_id),
         )
-        self.conn.commit()
 
     def add_parent_tag_to_tag(self, parent_tag_name: str, tag_name: str):
         self.c.execute(
@@ -273,7 +270,6 @@ class Persistor:
             """,
             (parent_tag_id, tag_id),
         )
-        self.conn.commit()
 
     def get_root_tag_ids_names(self):
         self.c.execute(
