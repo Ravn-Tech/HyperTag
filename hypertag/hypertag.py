@@ -378,4 +378,13 @@ class HyperTag():
             self.mount(self.root_dir)
 
 if __name__ == '__main__':
-    fire.Fire(HyperTag)
+    ht = HyperTag()
+    fire_cli = {
+        "add": ht.add,
+        "import": ht.import_tags,
+        "tag": ht.tag,
+        "metatag": ht.metatag,
+        "show": ht.show,
+        "find": ht.find
+    }
+    fire.Fire(fire_cli)
