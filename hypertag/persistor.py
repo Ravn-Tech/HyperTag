@@ -14,7 +14,7 @@ class Persistor:
         self.c = self.conn.cursor()
         self.file_groups_types = {
             "Images": ["jpg", "png", "svg"],
-            "Documents": ["txt", "pdf", "epub", "doc", "docx"],
+            "Documents": ["txt", "md", "rst", "pdf", "epub", "doc", "docx"],
             "Source Code": ["py", "ipynb", "c", "cpp", "rs", "erl", "ex", "js", "ts", "css", "html"]
         }
         self.file_types_groups = dict()
