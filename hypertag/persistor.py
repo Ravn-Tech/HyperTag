@@ -297,7 +297,7 @@ class Persistor:
         data = self.c.fetchall()
         return data
     
-    def get_leave_tag_ids(self):
+    def get_leaf_tag_ids(self):
         self.c.execute(
             """
             SELECT tag_id, name FROM tags WHERE tag_id NOT IN
