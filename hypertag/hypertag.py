@@ -9,7 +9,7 @@ from hypertag.persistor import Persistor
 
 
 class HyperTag():
-    """ Main class describing the CLI """
+    """ HyperTag CLI """
     def __init__(self):
         self._db = Persistor()
         self.root_dir = Path("./tagfs")
