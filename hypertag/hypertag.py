@@ -12,10 +12,10 @@ class HyperTag():
     """ HyperTag CLI """
     def __init__(self):
         self._db = Persistor()
-        self.root_dir = Path("./tagfs")
+        self.root_dir = Path("./HyperTagFS")
         os.makedirs(self.root_dir, exist_ok=True)
 
-    def mount(self, root_dir = "tagfs", parent_tag_id=None):
+    def mount(self, root_dir, parent_tag_id=None):
         """ Add file system tag representation using symlinks """
         if parent_tag_id is None:
             rmtree(self.root_dir)
