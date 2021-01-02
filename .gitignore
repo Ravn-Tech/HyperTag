@@ -1,4 +1,6 @@
 *.db
+*.tar.gz
+*.whl
 .vscode/*
 data/*
 HyperTagFS/*
