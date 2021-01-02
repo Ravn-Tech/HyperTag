@@ -91,8 +91,6 @@ class HyperTag():
             names = self._db.get_tags()
         for name in names:
             print(name[0])
-        if not names:
-            print("Nothing to show...")
 
     def query(self, *query):
         """ Query files using set operands.
