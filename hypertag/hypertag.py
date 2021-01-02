@@ -61,7 +61,7 @@ class HyperTag():
         added = 0
         for file_path in tqdm(file_paths):
             try:
-                if file_path.is_file():
+                if Path(file_path).is_file():
                     self._db.add_file(os.path.abspath(file_path))
                     added += 1
             except sqlite3.IntegrityError as _ex:
@@ -103,13 +103,13 @@ class HyperTag():
             else:
                 tags.append(arg)
         
+        self.add(*file_names)
         # Add tags
         for file_name in file_names:
             file_name = file_name.split("/")[-1]
             for tag in tags:
                 self._db.add_tag_to_file(file_name, tag)
             #print("Tagged", file_name, "with", tags)
-
         # Remount (everything is mounted TODO: make it lazy)
         if remount:
             self.mount(self.root_dir)
