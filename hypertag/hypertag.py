@@ -45,7 +45,7 @@ class HyperTag():
             self.mount(root_tag_path, tag_id)
 
     def import_tags(self, import_path):
-        """ Imports files with tags from existing directory hierarchy """
+        """ Imports files with tags from existing directory hierarchy (ignores hidden directories) """
         file_paths = [p for p in list(Path(import_path).rglob("*")) if p.is_file()]
         # Remove files in hidden directories
         visible_file_paths = []
