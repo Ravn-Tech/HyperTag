@@ -306,7 +306,7 @@ class HyperTag():
                 pass
         print("Added", added, "new file/s")
 
-    def show(self, mode):
+    def show(self, mode="tags"):
         """ Display files or tags """
         if mode == "files":
             names = self._db.get_files()
