@@ -12,8 +12,12 @@ class HyperTag():
     """ HyperTag CLI """
     def __init__(self):
         self._db = Persistor()
-        self.root_dir = Path("./HyperTagFS")
+        self.root_dir = Path(self._db.get_hypertagfs_dir())
         os.makedirs(self.root_dir, exist_ok=True)
+
+    def set_hypertagfs_dir(self, path):
+        """ Set path for HyperTagFS directory """
+        self._db.set_hypertagfs_dir(path)
 
     def mount(self, root_dir, parent_tag_id=None):
         """ Add file system tag representation using symlinks """
@@ -50,7 +54,7 @@ class HyperTag():
         print("Adding tags...")
         for file_path in tqdm(file_paths):
             file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][:-1]
-            self.tag(file_path.name, "with", *file_path_tags, remount=False)
+            self.tag(file_path.name, "with", *file_path_tags, remount=False, add=False)
             for previous, current in zip(file_path_tags, file_path_tags[1:]):
                 self.metatag(current, "with", previous, remount=False)
             #print(file_path_tags, file_path.name)
@@ -88,7 +92,7 @@ class HyperTag():
         for name in self._db.get_files_by_tag(query):
             print(name)
 
-    def tag(self, *args, remount=True):
+    def tag(self, *args, remount=True, add=True):
         """ Tag file/s with tag/s """
         # Parse arguments
         file_names = []
@@ -102,8 +106,8 @@ class HyperTag():
                 file_names.append(arg)
             else:
                 tags.append(arg)
-        
-        self.add(*file_names)
+        if add:
+            self.add(*file_names)
         # Add tags
         for file_name in file_names:
             file_name = file_name.split("/")[-1]
@@ -147,6 +151,7 @@ if __name__ == '__main__':
         "tag": ht.tag,
         "metatag": ht.metatag,
         "show": ht.show,
-        "find": ht.find
+        "find": ht.find,
+        "set_hypertagfs_dir": ht.set_hypertagfs_dir
     }
     fire.Fire(fire_cli)

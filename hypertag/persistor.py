@@ -8,6 +8,8 @@ class Persistor:
 
     def __init__(self):
         path = "./hypertag.db"
+        self.hypertagfs_dir = "hypertagfs_dir"
+        self.hypertagfs_name = "HyperTagFS"
         self.conn = sqlite3.connect(path)
         self.c = self.conn.cursor()
         self.file_groups_types = {
@@ -19,6 +21,27 @@ class Persistor:
         for group, types in self.file_groups_types.items():
             for file_type in types:
                 self.file_types_groups[file_type] = group
+
+        self.c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS
+            meta(
+                id INTEGER PRIMARY KEY,
+                name TEXT UNIQUE,
+                value TEXT
+            )
+            """
+        )
+        self.c.execute(
+            """
+            INSERT OR IGNORE INTO meta(
+                name,
+                value
+            )
+            VALUES(?, ?)
+            """,
+            (self.hypertagfs_dir, str(Path("./") / self.hypertagfs_name)),
+        )
 
         self.c.execute(
             """
@@ -85,6 +108,31 @@ class Persistor:
     def __exit__(self, exc_type, exc_value, traceback):
         """ Destructor: closes connection and cursor """
         self.close()
+
+    def set_hypertagfs_dir(self, path: str):
+        self.c.execute(
+            """
+            UPDATE meta
+            SET
+                value = ?
+            WHERE
+                name = ?
+            """,
+            [str(Path(path) / self.hypertagfs_name), self.hypertagfs_dir],
+        )
+        self.conn.commit()
+
+    def get_hypertagfs_dir(self):
+        self.c.execute(
+            """
+            SELECT value
+            FROM meta
+            WHERE name = ?
+            """,
+            (self.hypertagfs_dir,)
+        )
+        data = self.c.fetchone()[0]
+        return data
 
     def add_file(self, path: str):
         file_path = Path(path)
