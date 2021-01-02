@@ -19,7 +19,7 @@ class Persistor:
             "Source Code": ["sh", "py", "pyx", "ipynb", "c", "h", "cpp", "rs", "erl", "ex", "js", "ts", "css", "html", "sql"],
             "Configs": ["yml", "xml", "conf", "ini", "toml", "json", "lock"],
             "Archives": ["zip", "gz", "tar"],
-            "Blobs": ["bin", "pyc", "so", "o"],
+            "Blobs": ["bin", "pyc", "so", "o", "ar", "a", "lib"],
         }
         self.file_types_groups = dict()
         for group, types in self.file_groups_types.items():
