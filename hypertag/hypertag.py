@@ -83,8 +83,16 @@ class HyperTag():
         self._db.conn.commit()
         print("Added", added, "new file/s")
 
+    def tags(self, *file_names):
+        """ Display all tags of file/s """
+        tags = set()
+        for file_name in file_names:
+            tags.update(set(self._db.get_tags_by_file_name(file_name)))
+        for tag in tags:
+            print(tag)
+
     def show(self, mode="tags"):
-        """ Display files or tags """
+        """ Display all tags (default) or files """
         if mode == "files":
             names = self._db.get_files()
         elif mode == "tags":
@@ -179,6 +187,7 @@ if __name__ == '__main__':
         "tag": ht.tag,
         "metatag": ht.metatag,
         "show": ht.show,
+        "tags": ht.tags,
         "query": ht.query,
         "set_hypertagfs_dir": ht.set_hypertagfs_dir
     }

@@ -327,6 +327,21 @@ class Persistor:
         )
         data = self.c.fetchall()
         return data
+    
+    def get_tags_by_file_name(self, file_name):
+        self.c.execute(
+            """
+            SELECT t.name
+            FROM tags as t, tags_files as tf, files as f
+            WHERE 
+                t.tag_id = tf.tag_id AND
+                tf.file_id = f.file_id AND
+                f.name LIKE ?
+            """,
+            (file_name,)
+        )
+        data = [e[0] for e in self.c.fetchall()]
+        return data
 
     def get_file_paths_names_by_tag_id(self, tag_id):
         self.c.execute(
