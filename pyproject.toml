@@ -2,6 +2,7 @@
 name = "hypertag"
 version = "0.1.0"
 description = "File organization made easy using tags"
+readme = "README.md"
 authors = ["Sean <sean-p-96@hotmail.de>"]
 license = "MIT"
 homepage = "https://github.com/SeanPedersen/HyperTag"
