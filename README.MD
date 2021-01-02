@@ -5,7 +5,7 @@ File organization made easy. HyperTag let's the user express intuitively how the
 ## Install
 Currently there is no easy install available. Gotta clone this repo.
 
-Install packages: `python -m pip install fire tqdm filetype`
+Install packages: `$ python -m pip install fire tqdm filetype`
 
 Setup alias: `alias hypertag='python your/clone/path/hypertag/hypertag/hypertag.py'`
 
