@@ -280,6 +280,7 @@ class HyperTag():
     def import_tags(self, import_path):
         """ Imports files with tags from existing directory hierarchy """
         file_paths = list(Path(import_path).rglob("*"))
+        file_paths = [p for p in file_paths if not str(p).split("/")[-2].startswith(".")]
         file_paths = [p for p in file_paths if p.is_file()]
         print("Adding files...")
         self.add(*file_paths)
