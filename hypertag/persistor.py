@@ -40,7 +40,7 @@ class Persistor:
             )
             VALUES(?, ?)
             """,
-            (self.hypertagfs_dir, str(Path("./") / self.hypertagfs_name)),
+            (self.hypertagfs_dir, str(Path.home() / self.hypertagfs_name)),
         )
 
         self.c.execute(
