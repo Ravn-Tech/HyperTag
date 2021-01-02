@@ -10,6 +10,8 @@ class Persistor:
         path = "./hypertag.db"
         self.hypertagfs_dir = "hypertagfs_dir"
         self.hypertagfs_name = "HyperTagFS"
+        self.ignore_list_name = "ignore_list"
+        self.ignore_list = ["node_modules", "__pycache__"]
         self.conn = sqlite3.connect(path)
         self.c = self.conn.cursor()
         self.file_groups_types = {
@@ -37,7 +39,7 @@ class Persistor:
             )
             """
         )
-        self.c.execute(
+        self.c.executemany(
             """
             INSERT OR IGNORE INTO meta(
                 name,
@@ -45,7 +47,8 @@ class Persistor:
             )
             VALUES(?, ?)
             """,
-            (self.hypertagfs_dir, str(Path.home() / self.hypertagfs_name)),
+            [(self.hypertagfs_dir, str(Path.home() / self.hypertagfs_name)),
+            (self.ignore_list_name, ",".join(self.ignore_list))]
         )
 
         self.c.execute(
@@ -137,6 +140,18 @@ class Persistor:
             (self.hypertagfs_dir,)
         )
         data = self.c.fetchone()[0]
+        return data
+
+    def get_ignore_list(self):
+        self.c.execute(
+            """
+            SELECT value
+            FROM meta
+            WHERE name = ?
+            """,
+            (self.ignore_list_name,)
+        )
+        data = self.c.fetchone()[0].split(",")
         return data
 
     def add_file(self, path: str):

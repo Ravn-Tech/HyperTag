@@ -47,12 +47,13 @@ class HyperTag():
     def import_tags(self, import_path):
         """ Imports files with tags from existing directory hierarchy (ignores hidden directories) """
         file_paths = [p for p in list(Path(import_path).rglob("*")) if p.is_file()]
-        # Remove files in hidden directories
+        # Remove files in hidden directories or in ignore list
+        ignore_list = set(self._db.get_ignore_list())
         visible_file_paths = []
         for p in file_paths:
             is_hidden = False
             for pp in str(p).split("/"):
-                if pp.startswith("."):
+                if pp.startswith(".") or pp in ignore_list:
                     is_hidden = True
             if not is_hidden:
                 visible_file_paths.append(p)
