@@ -83,14 +83,12 @@ class HyperTag():
         if not names:
             print("Nothing to show...")
 
-    def find(self, query):
+    def query(self, query):
         """ Find files by tag.
             query: string
         """
-        print(f"Searching tag... ({query})")
-        print("Found:\n")
         for name in self._db.get_files_by_tag(query):
-            print(name)
+            print(name[0])
 
     def tag(self, *args, remount=True, add=True):
         """ Tag file/s with tag/s """
@@ -151,7 +149,7 @@ if __name__ == '__main__':
         "tag": ht.tag,
         "metatag": ht.metatag,
         "show": ht.show,
-        "find": ht.find,
+        "query": ht.query,
         "set_hypertagfs_dir": ht.set_hypertagfs_dir
     }
     fire.Fire(fire_cli)
