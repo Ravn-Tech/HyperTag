@@ -8,9 +8,7 @@ homepage = "https://github.com/SeanPedersen/HyperTag"
 repository = "https://github.com/SeanPedersen/HyperTag"
 keywords = ["tag", "file", "organization"]
 classifiers = [
-    "Environment :: Console",
-    "Framework :: Fire",
-    "Operating System :: Linux",
+    "Environment :: Console"
 ]
 include = [
     "LICENSE",
