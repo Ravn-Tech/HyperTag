@@ -250,6 +250,15 @@ class Persistor:
             (file_id, tag_id),
         )
 
+    def get_tag_id_by_name(self, name):
+        self.c.execute(
+            """
+            SELECT tag_id FROM tags WHERE name LIKE ?
+            """,
+            [name],
+        )
+        return self.c.fetchone()[0]
+
     def add_parent_tag_to_tag(self, parent_tag_name: str, tag_name: str):
         self.c.execute(
             """
@@ -260,21 +269,9 @@ class Persistor:
             """,
             [parent_tag_name],
         )
-        self.c.execute(
-            """
-            SELECT tag_id FROM tags WHERE name LIKE ?
-            """,
-            [parent_tag_name],
-        )
-        parent_tag_id = self.c.fetchone()[0]
 
-        self.c.execute(
-            """
-            SELECT tag_id FROM tags WHERE name LIKE ?
-            """,
-            [tag_name],
-        )
-        tag_id = self.c.fetchone()[0]
+        parent_tag_id = self.get_tag_id_by_name(parent_tag_name)
+        tag_id = self.get_tag_id_by_name(tag_name)
 
         self.c.execute(
             """
@@ -286,6 +283,48 @@ class Persistor:
             """,
             (parent_tag_id, tag_id),
         )
+
+    def merge_tags(self, tag_a, tag_b):
+        tag_a_id = self.get_tag_id_by_name(tag_a)
+        tag_b_id = self.get_tag_id_by_name(tag_b)
+        # Replace tag file associations
+        self.c.execute(
+            """
+            UPDATE OR IGNORE tags_files
+            SET
+                tag_id = ?
+            WHERE
+                tag_id = ?
+            """,
+            [tag_b_id, tag_a_id],
+        )
+        # Replace metatag associations
+        self.c.execute(
+            """
+            UPDATE OR IGNORE tags_tags
+            SET
+                parent_tag_id = ?
+            WHERE
+                parent_tag_id = ?
+            """,
+            [tag_b_id, tag_a_id],
+        )
+        self.c.execute(
+            """
+            UPDATE OR IGNORE tags_tags
+            SET
+                children_tag_id = ?
+            WHERE
+                children_tag_id = ?
+            """,
+            [tag_b_id, tag_a_id],
+        )
+        # Delete tag_a
+        self.c.execute("DELETE FROM tags_files WHERE tag_id = ?", [tag_a_id])
+        self.c.execute("DELETE FROM tags_tags WHERE parent_tag_id = ?", [tag_a_id])
+        self.c.execute("DELETE FROM tags_tags WHERE children_tag_id = ?", [tag_a_id])
+        self.c.execute("DELETE FROM tags WHERE tag_id = ?", [tag_a_id])
+        self.conn.commit()
 
     def get_root_tag_ids_names(self):
         self.c.execute(

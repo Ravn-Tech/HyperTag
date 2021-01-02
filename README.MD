@@ -30,6 +30,11 @@ Metatag tag/s to create tag hierarchies
 
 ```$ hypertag metatag human with animal```
 
+### Merge tags
+Merges all associations (files & tags) of tag_a into tag_b
+
+```$ hypertag merge human into "Homo Sapiens"```
+
 ### Query using Set Theory
 Prints file names matching the query. Nesting is currently not supported, queries are evaluated from left to right.
 

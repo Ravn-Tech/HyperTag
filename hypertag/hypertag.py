@@ -181,6 +181,12 @@ class HyperTag():
         if remount:
             self.mount(self.root_dir)
 
+    def merge(self, tag_a, _into, tag_b):
+        """ Merges all associations (files & tags) of tag_a into tag_b """
+        print("Merging tag", tag_a, "into", tag_b)
+        self._db.merge_tags(tag_a, tag_b)
+        self.mount(self.root_dir)
+
 if __name__ == '__main__':
     ht = HyperTag()
     fire_cli = {
@@ -188,6 +194,7 @@ if __name__ == '__main__':
         "import": ht.import_tags,
         "tag": ht.tag,
         "metatag": ht.metatag,
+        "merge": ht.merge,
         "show": ht.show,
         "tags": ht.tags,
         "query": ht.query,
