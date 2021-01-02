@@ -8,6 +8,7 @@ authors = ["Sean <sean-p-96@hotmail.de>"]
 python = "^3.8"
 fire = "^0.3.1"
 tqdm = "^4.55.0"
+filetype = "^1.0.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+import filetype
 
 
 class Persistor:
@@ -9,6 +10,15 @@ class Persistor:
         path = "./hypertag.db"
         self.conn = sqlite3.connect(path)
         self.c = self.conn.cursor()
+        self.file_groups_types = {
+            "Images": ["jpg", "png", "svg"],
+            "Documents": ["txt", "pdf", "epub", "doc", "docx"],
+            "Source Code": ["py", "ipynb", "c", "cpp", "rs", "erl", "ex", "js", "ts", "css", "html"]
+        }
+        self.file_types_groups = dict()
+        for group, types in self.file_groups_types.items():
+            for file_type in types:
+                self.file_types_groups[file_type] = group
 
         self.c.execute(
             """
@@ -17,19 +27,6 @@ class Persistor:
                 file_id INTEGER PRIMARY KEY,
                 name TEXT,
                 path TEXT UNIQUE
-            )
-            """
-        )
-
-        self.c.execute(
-            """
-            CREATE TABLE IF NOT EXISTS
-            file_templates(
-                file_id INTEGER PRIMARY KEY,
-                creation_time INTEGER,
-                last_edit_time INTEGER,
-                name TEXT UNIQUE,
-                content TEXT
             )
             """
         )
@@ -70,6 +67,12 @@ class Persistor:
             """
         )
 
+        for group, types in self.file_groups_types.items():
+            self.add_tag(group)
+            for file_type in types:
+                self.add_tag(file_type)
+                self.add_parent_tag_to_tag(group, file_type)
+
     def close(self):
         self.conn.commit()
         self.c.close()
@@ -86,6 +89,16 @@ class Persistor:
     def add_file(self, path: str):
         file_path = Path(path)
         file_name = file_path.name
+        file_type_guess = filetype.guess(str(file_path))
+        if file_type_guess is None:
+            file_name_splits = file_name.split(".")
+            candidate_file_type = file_name_splits[-1].lower()
+            if len(file_name_splits) > 1 and len(candidate_file_type) < 7:
+                file_type = candidate_file_type
+            else:
+                file_type = None
+        else:
+            file_type = file_type_guess.extension#
 
         self.c.execute(
             """
@@ -97,8 +110,33 @@ class Persistor:
             """,
             (file_name, str(file_path)),
         )
+        if len(file_name.split(".")) > 1 and file_type:
+            self.add_tag_to_file(file_name, file_type)
+        file_group = self.file_types_groups.get(file_type)
+        if file_group:
+            self.add_tag_to_file(file_name, file_group)
         self.conn.commit()
-    
+
+    def add_tag(self, name: str):
+        self.c.execute(
+            """
+            INSERT OR IGNORE INTO tags(
+                name
+            )
+            VALUES(?)
+            """,
+            [name],
+        )
+        self.conn.commit()
+        self.c.execute(
+            """
+            SELECT tag_id FROM tags WHERE name LIKE ?
+            """,
+            [name],
+        )
+        tag_id = self.c.fetchone()[0]
+        return tag_id
+
     def get_files(self):
         self.c.execute(
             """
