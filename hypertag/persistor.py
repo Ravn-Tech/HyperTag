@@ -18,8 +18,8 @@ class Persistor:
             "Documents": ["txt", "md", "rst", "pdf", "epub", "doc", "docx"],
             "Source Code": ["sh", "py", "pyx", "ipynb", "c", "h", "cpp", "rs", "erl", "ex", "js", "ts", "css", "html", "sql"],
             "Configs": ["yml", "xml", "conf", "ini", "toml", "json", "lock"],
-            "Archives": ["zip", "gz", "tar"],
-            "Blobs": ["bin", "pyc", "so", "o", "ar", "a", "lib", "rmeta"],
+            "Archives": ["zip", "gz", "xz", "z", "sz", "lz", "bz2", "tar", "iso", "7z", "rar"],
+            "Blobs": ["bin", "pyc", "so", "o", "ar", "a", "lib", "rmeta", "jar"],
             "Misc": ["ll", "d", "tag", "blend"],
         }
         self.file_types_groups = dict()
