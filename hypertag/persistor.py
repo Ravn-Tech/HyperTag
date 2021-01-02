@@ -13,11 +13,13 @@ class Persistor:
         self.conn = sqlite3.connect(path)
         self.c = self.conn.cursor()
         self.file_groups_types = {
-            "Images": ["jpg", "png", "svg"],
+            "Images": ["jpg", "png", "svg", "tif"],
             "Videos": ["mp4", "gif", "webm", "avi", "mkv"],
             "Documents": ["txt", "md", "rst", "pdf", "epub", "doc", "docx"],
-            "Source Code": ["sh", "py", "ipynb", "c", "cpp", "rs", "erl", "ex", "js", "ts", "css", "html", "sql"],
-            "Configs": ["yml", "xml", "conf", "toml", "json"]
+            "Source Code": ["sh", "py", "pyx", "ipynb", "c", "h", "cpp", "rs", "erl", "ex", "js", "ts", "css", "html", "sql"],
+            "Configs": ["yml", "xml", "conf", "ini", "toml", "json"],
+            "Archives": ["zip", "gz", "tar"],
+            "Blobs": ["pyc", "so", "o"],
         }
         self.file_types_groups = dict()
         for group, types in self.file_groups_types.items():
