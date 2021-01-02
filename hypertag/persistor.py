@@ -22,7 +22,7 @@ class Persistor:
             "Configs": ["yml", "xml", "conf", "ini", "toml", "json", "lock"],
             "Archives": ["zip", "gz", "xz", "z", "sz", "lz", "bz2", "tar", "iso", "7z", "rar"],
             "Blobs": ["bin", "pyc", "so", "o", "ar", "a", "lib", "rmeta", "jar", "exe"],
-            "Misc": ["ll", "d", "tag", "blend"],
+            "Misc": ["ll", "d", "tag", "blend", "map"],
         }
         self.file_types_groups = dict()
         for group, types in self.file_groups_types.items():
