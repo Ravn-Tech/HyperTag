@@ -60,4 +60,4 @@ This project is inspired by other existing open-source projects:
 - [TMSU](https://github.com/oniony/TMSU)
 - [SuperTag](https://github.com/amoffat/supertag)
 
-**What is the point of HyperTag existence?** HyperTag offers some unique features such as the import function that make it very convenient to use. Also HyperTag's code base is written in Python and thus extremely small (<500 LOC) compared to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it very easy to modify / extend / fix it yourself.
+**What is the point of HyperTag's existence?** HyperTag offers some unique features such as the import function that make it very convenient to use. Also HyperTag's code base is written in Python and thus extremely small (<500 LOC) compared to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it very easy to modify / extend / fix it yourself.
