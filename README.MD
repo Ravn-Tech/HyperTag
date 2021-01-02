@@ -54,3 +54,8 @@ MINUS (difference): <br>
 - Python 3.8 powers HyperTag
 - SQLite3 serves as the meta data storage engine
 - Symbolic links are used to create the HyperTagFS directory structure
+
+## Inspiration
+This project is inspired by other existing open-source projects:
+- [TMSU](https://github.com/oniony/TMSU)
+- [SuperTag](https://github.com/amoffat/supertag)
