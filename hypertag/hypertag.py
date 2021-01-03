@@ -595,7 +595,7 @@ class HyperTag():
         self._db.merge_tags(tag_a, tag_b)
         self.mount(self.root_dir)
 
-if __name__ == '__main__':
+def main():
     ht = HyperTag()
     fire_cli = {
         "add": ht.add,
@@ -609,3 +609,6 @@ if __name__ == '__main__':
         "set_hypertagfs_dir": ht.set_hypertagfs_dir
     }
     fire.Fire(fire_cli)
+
+if __name__ == '__main__':
+    main()
