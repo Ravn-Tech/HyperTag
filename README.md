@@ -60,7 +60,7 @@ MINUS (difference): <br>
 ```$ hypertag show files```
 
 ## Architecture
-- Python 3.8 powers HyperTag
+- Python 3.9 powers HyperTag
 - SQLite3 serves as the meta data storage engine
 - Symbolic links are used to create the HyperTagFS directory structure
 
