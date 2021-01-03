@@ -10,7 +10,7 @@ Install packages: `$ python -m pip install fire tqdm filetype`
 Setup alias: `alias hypertag='python your/clone/path/hypertag/hypertag/hypertag.py'`
 
 ## Quickstart
-HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
+HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories. HyperTag recognizes a multitude of file types and groups them automatically together into folders, which can be found in ```HyperTagFS```.
 
 ## CLI Functions
 
