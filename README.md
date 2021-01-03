@@ -3,11 +3,7 @@
 File organization made easy. HyperTag let's humans intuitively express how they think about their files using tags.
 
 ## Install
-Currently there is no easy install available. Gotta clone this repo.
-
-Install packages: `$ python -m pip install fire tqdm filetype`
-
-Setup alias: `alias hypertag='python your/clone/path/hypertag/hypertag/hypertag.py'`
+`$ pip install hypertag`
 
 ## Quickstart
 HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories. HyperTag recognizes a multitude of file types and groups them automatically together into folders, which can be found in ```HyperTagFS```.
@@ -60,8 +56,8 @@ MINUS (difference): <br>
 ```$ hypertag show files```
 
 ## Architecture
-- Python 3.9 powers HyperTag
-- SQLite3 serves as the meta data storage engine
+- Python powers HyperTag
+- SQLite3 serves as the meta data storage engine (located at `~/.config/hypertag/hypertag.db`)
 - Symbolic links are used to create the HyperTagFS directory structure
 
 ## Inspiration
