@@ -12,7 +12,9 @@ class Persistor:
     """ SQLite3 DB persistence class """
 
     def __init__(self):
-        path = Path(__file__).parent.parent / "hypertag.db"
+        db_path = Path.home() / ".config/hypertag/"
+        os.makedirs(db_path, exist_ok=True)
+        path = db_path / "hypertag.db"
         self.hypertagfs_dir = "hypertagfs_dir"
         self.hypertagfs_name = "HyperTagFS"
         self.ignore_list_name = "ignore_list"
