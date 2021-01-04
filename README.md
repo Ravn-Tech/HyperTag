@@ -6,9 +6,20 @@ File organization made easy. HyperTag let's humans intuitively express how they 
 `$ pip install hypertag`
 
 ## Quickstart
-HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories. HyperTag also recognizes a multitude of file types and groups them automatically together into folders (e.g. Images, Documents, Source Code), which can be found in ```HyperTagFS```.
+HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
+
+**Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
+
+**File Type Groups**: HyperTag automatically creates folders containing common files (e.g. Images: jpg, png, etc., Documents: txt, pdf, etc., Source Code: py, js, etc.), which can be found in ```HyperTagFS```.
+
+**HyperTagFS Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (query) creation.
 
 ## CLI Functions
+
+### Start HyperTagFS daemon
+Starts process watching HyperTagFS dir for user changes.
+
+```$ hypertag daemon```
 
 ### Set HyperTagFS directory path
 Default is the user's home directory.
@@ -25,13 +36,18 @@ Manually tag files
 
 ```$ hypertag tag humans/*.txt with human "Homo Sapiens"```
 
+### Untag file/s
+Manually remove tag/s from file/s
+
+```$ hypertag untag humans/*.txt with human "Homo Sapiens"```
+
 ### Tag a tag
 Metatag tag/s to create tag hierarchies
 
 ```$ hypertag metatag human with animal```
 
 ### Merge tags
-Merges all associations (files & tags) of tag_a into tag_b
+Merges all associations (files & tags) of tag A into tag B
 
 ```$ hypertag merge human into "Homo Sapiens"```
 

@@ -3,6 +3,7 @@
 *.whl
 .vscode/*
 data/*
+humans/*
 HyperTagFS/*
 .ipynb_checkpoints/*
 **/__pycache__/**

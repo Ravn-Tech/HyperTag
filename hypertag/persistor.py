@@ -137,6 +137,8 @@ class Persistor:
                 self.add_tag(file_type)
                 self.add_parent_tag_to_tag(group, file_type)
 
+        self.conn.commit()
+
     def close(self):
         self.c.close()
         self.conn.close()
@@ -266,6 +268,17 @@ class Persistor:
         self.c.execute("SELECT file_id FROM files WHERE name LIKE ?", [name])
         return self.c.fetchone()[0]
 
+    def remove_parent_tag_from_tag(self, parent_tag_name: str, tag_name: str):
+        parent_tag_id = self.get_tag_id_by_name(parent_tag_name)
+        tag_id = self.get_tag_id_by_name(tag_name)
+        self.c.execute(
+            """
+            DELETE FROM tags_tags
+            WHERE parent_tag_id = ? AND children_tag_id = ?""",
+            [parent_tag_id, tag_id],
+        )
+        self.conn.commit()
+
     def add_parent_tag_to_tag(self, parent_tag_name: str, tag_name: str):
         self.c.execute(
             """
@@ -278,6 +291,7 @@ class Persistor:
         )
 
         parent_tag_id = self.get_tag_id_by_name(parent_tag_name)
+        self.add_tag(tag_name)
         tag_id = self.get_tag_id_by_name(tag_name)
 
         self.c.execute(
@@ -290,6 +304,15 @@ class Persistor:
             """,
             (parent_tag_id, tag_id),
         )
+
+    def remove_tag(self, tag_name):
+        # Remove all tag associations
+        tag_id = self.get_tag_id_by_name(tag_name)
+        self.c.execute("DELETE FROM tags_files WHERE tag_id = ?", [tag_id])
+        self.c.execute("DELETE FROM tags_tags WHERE parent_tag_id = ?", [tag_id])
+        self.c.execute("DELETE FROM tags_tags WHERE children_tag_id = ?", [tag_id])
+        self.c.execute("DELETE FROM tags WHERE tag_id = ?", [tag_id])
+        self.conn.commit()
 
     def merge_tags(self, tag_a, tag_b):
         tag_a_id = self.get_tag_id_by_name(tag_a)
@@ -326,12 +349,7 @@ class Persistor:
             """,
             [tag_b_id, tag_a_id],
         )
-        # Delete tag_a
-        self.c.execute("DELETE FROM tags_files WHERE tag_id = ?", [tag_a_id])
-        self.c.execute("DELETE FROM tags_tags WHERE parent_tag_id = ?", [tag_a_id])
-        self.c.execute("DELETE FROM tags_tags WHERE children_tag_id = ?", [tag_a_id])
-        self.c.execute("DELETE FROM tags WHERE tag_id = ?", [tag_a_id])
-        self.conn.commit()
+        self.remove_tag(tag_a)  # Commits
 
     def get_root_tag_ids_names(self):
         self.c.execute(
