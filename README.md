@@ -5,7 +5,7 @@ File organization made easy. HyperTag let's humans intuitively express how they 
 ## Install
 `$ pip install hypertag`
 
-## Quickstart
+## Quick Start
 HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
@@ -14,15 +14,24 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **HyperTagFS Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation with automatic query result population.
 
+**HyperTag Graph**: Quickly get an overview of your HyperTag Graph! HyperTag visualizes the metatag graph on every change and saves it at `HyperTagFS/hypertag-graph.pdf`.
+
+<object data="https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.pdf" type="application/pdf" width="400px" height="400px">
+    <embed src="https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.pdf">
+    <p>This browser does not support PDF. Please download the PDF to view it: <a
+            href="https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.pdf">Download PDF</a></p>
+    </embed>
+</object>
+
 ## CLI Functions
 
 ### Start HyperTagFS daemon
-Starts process watching HyperTagFS dir for user changes.
+Starts process watching HyperTagFS dir for user changes
 
 ```$ hypertag daemon```
 
 ### Set HyperTagFS directory path
-Default is the user's home directory.
+Default is the user's home directory
 
 ```$ hypertag set_hypertagfs_dir path/to/directory```
 
@@ -52,7 +61,7 @@ Merges all associations (files & tags) of tag A into tag B
 ```$ hypertag merge human into "Homo Sapiens"```
 
 ### Query using Set Theory
-Prints file names matching the query. Nesting is currently not supported, queries are evaluated from left to right.
+Prints file names matching the query. Nesting is currently not supported, queries are evaluated from left to right
 
 Print paths: ```$ hypertag query human --path```
 
@@ -84,6 +93,14 @@ Print names:
 
 Print paths:
 ```$ hypertag show files --path```
+
+### Visualize HyperTag Graph
+Visualizes the metatag graph hierarchy (saved at HyperTagFS root)
+
+```$ hypertag graph```
+
+Specify [layout algorithm](https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms) (default: fruchterman_reingold):
+```$ hypertag graph --layout=kamada_kawai```
 
 ## Architecture
 - Python powers HyperTag
