@@ -6,7 +6,7 @@ File organization made easy. HyperTag let's humans intuitively express how they 
 `$ pip install hypertag`
 
 ## Quickstart
-HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories. HyperTag recognizes a multitude of file types and groups them automatically together into folders, which can be found in ```HyperTagFS```.
+HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories. HyperTag also recognizes a multitude of file types and groups them automatically together into folders (e.g. Images, Documents, Source Code), which can be found in ```HyperTagFS```.
 
 ## CLI Functions
 
@@ -38,6 +38,8 @@ Merges all associations (files & tags) of tag_a into tag_b
 ### Query using Set Theory
 Prints file names matching the query. Nesting is currently not supported, queries are evaluated from left to right.
 
+Print paths: ```$ hypertag query human --path```
+
 Default operand is AND (intersection): <br>
 ```$ hypertag query human "Homo Sapiens"```
 
@@ -53,7 +55,11 @@ MINUS (difference): <br>
 
 ### Print all files
 
+Print names:
 ```$ hypertag show files```
+
+Print paths:
+```$ hypertag show files --path```
 
 ## Architecture
 - Python powers HyperTag
@@ -62,7 +68,7 @@ MINUS (difference): <br>
 
 ## Inspiration
 This project is inspired by other existing open-source projects:
-- [TMSU](https://github.com/oniony/TMSU)
-- [SuperTag](https://github.com/amoffat/supertag)
+- [TMSU](https://github.com/oniony/TMSU): Written in Go
+- [SuperTag](https://github.com/amoffat/supertag): Written in Rust
 
 **What is the point of HyperTag's existence?** HyperTag offers some unique features such as the import function that make it very convenient to use. Also HyperTag's code base is written in Python and thus extremely small (<500 LOC) compared to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it very easy to modify / extend / fix it yourself.
