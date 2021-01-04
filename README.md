@@ -12,7 +12,7 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **File Type Groups**: HyperTag automatically creates folders containing common files (e.g. Images: jpg, png, etc., Documents: txt, pdf, etc., Source Code: py, js, etc.), which can be found in ```HyperTagFS```.
 
-**HyperTagFS Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation.
+**HyperTagFS Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation with automatic query result population.
 
 ## CLI Functions
 
@@ -108,4 +108,4 @@ This project is inspired by other existing open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go
 - [SuperTag](https://github.com/amoffat/supertag): Written in Rust
 
-**What is the point of HyperTag's existence?** HyperTag offers some unique features such as the import function that make it very convenient to use. Also HyperTag's code base is written in Python and thus extremely small (<600 LOC) compared to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it very easy to modify / extend / fix it yourself.
+**What is the point of HyperTag's existence?** HyperTag offers some unique features such as the import function that make it very convenient to use. Also HyperTag's code base is written in Python and thus extremely small (<600 LOC) compared to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it very easy to modify it / contribute yourself.
