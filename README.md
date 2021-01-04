@@ -67,7 +67,7 @@ MINUS (difference): <br>
 
 ### Print all tags of file/s
 
-```$ hypertag tags filename1 filename1```
+```$ hypertag tags filename1 filename2```
 
 ### Print all metatags of tag/s
 
