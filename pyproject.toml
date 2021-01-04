@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hypertag"
-version = "0.2.4"
+version = "0.3.0"
 description = "File organization made easy using tags"
 readme = "README.md"
 authors = ["Sean <sean-p-96@hotmail.de>"]
@@ -21,6 +21,8 @@ fire = "^0.3.1"
 tqdm = "^4.55.0"
 filetype = "^1.0.7"
 watchdog = "^1.0.2"
+python-igraph = "^0.8.3"
+cairocffi = "^1.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

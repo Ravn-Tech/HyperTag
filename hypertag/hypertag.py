@@ -9,6 +9,7 @@ import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 from .persistor import Persistor
 from .daemon import start
+from .graph import graph
 
 
 class HyperTag:
@@ -27,6 +28,7 @@ class HyperTag:
         """ Add file system tag representation using symlinks """
         if parent_tag_id is None:
             print("Updating HyperTagFS...")
+            graph()
             tag_ids_names = self.db.get_root_tag_ids_names()
         else:
             tag_ids_names = self.db.get_tag_id_children_ids_names(parent_tag_id)
@@ -267,6 +269,7 @@ def main():
         "query": ht.query,
         "set_hypertagfs_dir": ht.set_hypertagfs_dir,
         "daemon": daemon,
+        "graph": graph,
     }
     fire.Fire(fire_cli)
 
