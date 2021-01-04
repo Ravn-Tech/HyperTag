@@ -201,13 +201,7 @@ class Persistor:
             """,
             [name],
         )
-        self.c.execute(
-            """
-            SELECT tag_id FROM tags WHERE name LIKE ?
-            """,
-            [name],
-        )
-        tag_id = self.c.fetchone()[0]
+        tag_id = self.get_tag_id_by_name(name)
         return tag_id
 
     def get_files(self, show_path):
@@ -228,13 +222,7 @@ class Persistor:
             """,
             [tag_name],
         )
-        self.c.execute(
-            """
-            SELECT tag_id FROM tags WHERE name LIKE ?
-            """,
-            [tag_name],
-        )
-        tag_id = self.c.fetchone()[0]
+        tag_id = self.get_tag_id_by_name(tag_name)
 
         self.c.execute(
             """
