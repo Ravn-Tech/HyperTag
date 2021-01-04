@@ -214,21 +214,20 @@ class HyperTag:
         # Add tags
         for tag in tags:
             for parent_tag in parent_tags:
-                # file_names = self.db.get_files_by_tag(tag, show_path=False)
-                # for file_name in file_names:
-                #    self.db.add_tag_to_file(parent_tag, file_name)
                 self.db.add_parent_tag_to_tag(parent_tag, tag)
-                # Remove tag dir in root level
-                try:
-                    rmtree(self.root_dir / tag)
-                except:  # nosec
-                    pass  # Ignore if non existing
             # print("MetaTagged", tag, "with", parent_tags)
         if commit:
             self.db.conn.commit()
         # Remount (everything is mounted TODO: make it lazy)
         if remount:
             self.mount(self.root_dir)
+        # Remove tag/s dir in root level
+        for tag in tags:
+            for parent_tag in parent_tags:
+                try:
+                    rmtree(self.root_dir / tag)
+                except:  # nosec
+                    pass  # Ignore if non existing
 
     def rmdir(self, dir_name):
         # Delete directory recursively
