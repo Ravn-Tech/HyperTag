@@ -158,7 +158,7 @@ class HyperTag:
             # print("Tagged", file_name, "with", tags)
         if commit:
             self.db.conn.commit()
-        # Remount (everything is mounted TODO: make it lazy)
+        # Remount (everything is mounted)
         if remount:
             self.mount(self.root_dir)
 
@@ -184,7 +184,7 @@ class HyperTag:
             # print("Tagged", file_name, "with", tags)
         if commit:
             self.db.conn.commit()
-        # Remount (everything is mounted TODO: make it lazy)
+        # Remount (everything is mounted)
         if remount:
             self.mount(self.root_dir)
 
@@ -218,7 +218,7 @@ class HyperTag:
             # print("MetaTagged", tag, "with", parent_tags)
         if commit:
             self.db.conn.commit()
-        # Remount (everything is mounted TODO: make it lazy)
+        # Remount (everything is mounted)
         if remount:
             self.mount(self.root_dir)
         # Remove tag/s dir in root level
