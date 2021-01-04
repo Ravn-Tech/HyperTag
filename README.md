@@ -3,6 +3,8 @@
 File organization made easy. HyperTag let's humans intuitively express how they think about their files using tags.
 
 ## Install
+Available on [PyPI](https://pypi.org/project/hypertag/)
+
 `$ pip install hypertag`
 
 ## Quick Start
@@ -121,4 +123,4 @@ This project is inspired by other existing open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go
 - [SuperTag](https://github.com/amoffat/supertag): Written in Rust
 
-**What is the point of HyperTag's existence?** HyperTag offers some unique features such as the import function that make it very convenient to use. Also HyperTag's code base is written in Python and thus extremely small (<600 LOC) compared to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to modify / contribute yourself.
+**What is the point of HyperTag's existence?** HyperTag offers some unique features such as the import function that make it very convenient to use. Also HyperTag's code base is written in Python and thus extremely small (<700 LOC) compared to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to modify / contribute yourself.
