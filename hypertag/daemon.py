@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """ Daemon process monitoring changes in HyperTagFS """
 import os
 import time
