@@ -229,19 +229,19 @@ class HyperTag:
                 except:  # nosec
                     pass  # Ignore if non existing
 
-    def rmdir(self, dir_name):
-        # Delete directory recursively
-        directory = self.root_dir
+    def rmdir(self, directory, del_dir_name):
+        # Delete dirs named del_dir_name in directory recursively
         for item in directory.iterdir():
-            if item.name == dir_name and item.is_dir():
+            if item.name == del_dir_name and item.is_dir():
                 rmtree(item)
-                self.rmdir(item)
+            if item.is_dir():
+                self.rmdir(item, del_dir_name)
 
     def merge(self, tag_a, _into, tag_b):
         """ Merges all associations (files & tags) of tag_a into tag_b """
         print("Merging tag", tag_a, "into", tag_b)
         self.db.merge_tags(tag_a, tag_b)
-        self.rmdir(tag_a)
+        self.rmdir(self.root_dir, tag_a)
         self.mount(self.root_dir)
 
 
