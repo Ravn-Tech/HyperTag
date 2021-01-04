@@ -153,7 +153,33 @@ class HyperTag:
         for file_name in file_names:
             file_name = file_name.split("/")[-1]
             for tag in tags:
-                self.db.add_tag_to_file(file_name, tag)
+                self.db.add_tag_to_file(tag, file_name)
+            # print("Tagged", file_name, "with", tags)
+        if commit:
+            self.db.conn.commit()
+        # Remount (everything is mounted TODO: make it lazy)
+        if remount:
+            self.mount(self.root_dir)
+
+    def untag(self, *args, remount=True, commit=True):
+        """ Untag (remove tag/s of) file/s with tag/s """
+        # Parse arguments
+        file_names = []
+        tags = []
+        is_file_name = True
+        for arg in args:
+            if arg == "with":
+                is_file_name = False
+                continue
+            if is_file_name:
+                file_names.append(arg)
+            else:
+                tags.append(arg)
+        # Remove tags
+        for file_name in file_names:
+            file_name = file_name.split("/")[-1]
+            for tag in tags:
+                self.db.remove_tag_from_file(tag, file_name)
             # print("Tagged", file_name, "with", tags)
         if commit:
             self.db.conn.commit()
@@ -200,6 +226,7 @@ def main():
         "add": ht.add,
         "import": ht.import_tags,
         "tag": ht.tag,
+        "untag": ht.untag,
         "metatag": ht.metatag,
         "merge": ht.merge,
         "show": ht.show,

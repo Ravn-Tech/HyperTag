@@ -138,7 +138,6 @@ class Persistor:
                 self.add_parent_tag_to_tag(group, file_type)
 
     def close(self):
-        self.conn.commit()
         self.c.close()
         self.conn.close()
 
@@ -212,10 +211,10 @@ class Persistor:
             (file_name, str(file_path)),
         )
         if len(file_name.split(".")) > 1 and file_type:
-            self.add_tag_to_file(file_name, file_type)
+            self.add_tag_to_file(file_type, file_name)
         file_group = self.file_types_groups.get(file_type)
         if file_group:
-            self.add_tag_to_file(file_name, file_group)
+            self.add_tag_to_file(file_group, file_name)
 
     def add_tag(self, name: str):
         self.c.execute(
@@ -238,25 +237,9 @@ class Persistor:
         data = [e[0] for e in self.c.fetchall()]
         return data
 
-    def add_tag_to_file(self, file_name: str, tag_name: str):
-        self.c.execute(
-            """
-            INSERT OR IGNORE INTO tags(
-                name
-            )
-            VALUES(?)
-            """,
-            [tag_name],
-        )
-        tag_id = self.get_tag_id_by_name(tag_name)
-
-        self.c.execute(
-            """
-            SELECT file_id FROM files WHERE name LIKE ?
-            """,
-            [file_name],
-        )
-        file_id = self.c.fetchone()[0]
+    def add_tag_to_file(self, tag_name: str, file_name: str):
+        file_id = self.get_file_id_by_name(file_name)
+        tag_id = self.add_tag(tag_name)
 
         self.c.execute(
             """
@@ -269,13 +252,18 @@ class Persistor:
             (file_id, tag_id),
         )
 
-    def get_tag_id_by_name(self, name):
-        self.c.execute(
-            """
-            SELECT tag_id FROM tags WHERE name LIKE ?
-            """,
-            [name],
-        )
+    def remove_tag_from_file(self, tag_name: str, file_name: str):
+        file_id = self.get_file_id_by_name(file_name)
+        tag_id = self.get_tag_id_by_name(tag_name)
+        self.c.execute("DELETE FROM tags_files WHERE file_id = ? AND tag_id = ?", [file_id, tag_id])
+        self.conn.commit()
+
+    def get_tag_id_by_name(self, name: str):
+        self.c.execute("SELECT tag_id FROM tags WHERE name LIKE ?", [name])
+        return self.c.fetchone()[0]
+
+    def get_file_id_by_name(self, name: str):
+        self.c.execute("SELECT file_id FROM files WHERE name LIKE ?", [name])
         return self.c.fetchone()[0]
 
     def add_parent_tag_to_tag(self, parent_tag_name: str, tag_name: str):
