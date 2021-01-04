@@ -16,12 +16,8 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **HyperTag Graph**: Quickly get an overview of your HyperTag Graph! HyperTag visualizes the metatag graph on every change and saves it at `HyperTagFS/hypertag-graph.pdf`.
 
-<object data="https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.pdf" type="application/pdf" width="400px" height="400px">
-    <embed src="https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.pdf">
-    <p>This browser does not support PDF. Please download the PDF to view it: <a
-            href="https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.pdf">Download PDF</a></p>
-    </embed>
-</object>
+![HyperTag Graph Example](https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.jpg)
+
 
 ## CLI Functions
 
