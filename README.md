@@ -49,6 +49,10 @@ OR (union): <br>
 MINUS (difference): <br>
 ```$ hypertag query human minus "Homo Sapiens"```
 
+### Print all tags of file/s
+
+```$ hypertag tags filename1 filename1```
+
 ### Print all tags
 
 ```$ hypertag show```
