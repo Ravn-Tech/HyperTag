@@ -210,14 +210,12 @@ class Persistor:
         tag_id = self.c.fetchone()[0]
         return tag_id
 
-    def get_files(self):
-        self.c.execute(
-            """
-            SELECT name
-            FROM files
-            """
-        )
-        data = self.c.fetchall()
+    def get_files(self, show_path):
+        if show_path:
+            self.c.execute("SELECT path FROM files")
+        else:
+            self.c.execute("SELECT name FROM files")
+        data = [e[0] for e in self.c.fetchall()]
         return data
 
     def add_tag_to_file(self, file_name: str, tag_name: str):
@@ -403,10 +401,14 @@ class Persistor:
         data = self.c.fetchall()
         return data
 
-    def get_files_by_tag(self, tag_name):
+    def get_files_by_tag(self, tag_name, show_path):
+        if show_path:
+            select = "SELECT f.path"
+        else:
+            select = "SELECT f.name"
         self.c.execute(
+            select +
             """
-            SELECT f.name
             FROM files f, tags t, tags_files tf
             WHERE f.file_id = tf.file_id AND
                 tf.tag_id = t.tag_id AND
@@ -503,16 +505,16 @@ class HyperTag():
         for tag in tags:
             print(tag)
 
-    def show(self, mode="tags"):
+    def show(self, mode="tags", path=False):
         """ Display all tags (default) or files """
         if mode == "files":
-            names = self._db.get_files()
+            names = self._db.get_files(path)
         elif mode == "tags":
             names = self._db.get_tags()
         for name in names:
-            print(name[0])
+            print(name)
 
-    def query(self, *query):
+    def query(self, *query, path=False):
         """ Query files using set operands.
             Supported operands:
               - and : intersection (default)
@@ -521,11 +523,11 @@ class HyperTag():
         """
         # TODO: Parse AST to support queries with brackets
         operands = {"and", "or", "minus"}
-        results = set(self._db.get_files_by_tag(query[0]))
+        results = set(self._db.get_files_by_tag(query[0], path))
         current_operand = None
         for query_symbol in query[1:]:
             if query_symbol not in operands:
-                file_names = set(self._db.get_files_by_tag(query_symbol))                    
+                file_names = set(self._db.get_files_by_tag(query_symbol, path))                    
                 if current_operand == "or":
                     results = results.union(file_names)
                 elif current_operand == "minus":
