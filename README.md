@@ -76,7 +76,7 @@ Print paths:
 - Install [Poetry](https://python-poetry.org/docs/#installation)
 - Install dependencies: `$ poetry install`
 - Activate virtual environment: `$ poetry shell`
-- Run all tests & show coverage stats: ```$ pytest -v --cov```
+- Run all tests: ```$ pytest -v```
 - Run Black formatter: ```$ black hypertag/```
 - Run PyLint: ```$ pylint **/*.py```
 - Run MyPy: ```$ mypy **/*.py```
