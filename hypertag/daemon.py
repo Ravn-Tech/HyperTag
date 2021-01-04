@@ -52,17 +52,9 @@ class ChangeHandler(FileSystemEventHandler):
         if event.is_directory:
             tag_name = path.name
             parent_tag_name = path.parent.name
-            if parent_tag_name == "HyperTagFS":
-                # Tag is at root -> remove all associations
-                # TODO: Remove only for children (tags & files)
-                print("Removing all tag associations for:", tag_name, "Parent:", parent_tag_name)
-                with Persistor() as db:
-                    db.remove_tag(tag_name)
-            else:
-                # Tag is child
-                print("Removing parent tag association for:", tag_name, "Parent:", parent_tag_name)
-                with Persistor() as db:
-                    db.remove_parent_tag_from_tag(parent_tag_name, tag_name)
+            print("Removing parent tag association for:", tag_name, "Parent:", parent_tag_name)
+            with Persistor() as db:
+                db.remove_parent_tag_from_tag(parent_tag_name, tag_name)
         else:  # Symlink
             tag_name = path.parent.name
             if tag_name == "_files":

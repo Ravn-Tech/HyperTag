@@ -69,6 +69,10 @@ MINUS (difference): <br>
 
 ```$ hypertag tags filename1 filename1```
 
+### Print all metatags of tag/s
+
+```$ hypertag metatags tag1 tag2```
+
 ### Print all tags
 
 ```$ hypertag show```

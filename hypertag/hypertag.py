@@ -188,6 +188,14 @@ class HyperTag:
         if remount:
             self.mount(self.root_dir)
 
+    def metatags(self, *tag_names):
+        """ Display all metatags of tag/s """
+        tags = set()
+        for tag_name in tag_names:
+            tags.update(set(self.db.get_meta_tags_by_tag_name(tag_name)))
+        for tag in tags:
+            print(tag)
+
     def metatag(self, *args, remount=True, commit=True):
         """ Tag tag/s with tag/s """
         # Parse arguments
@@ -206,6 +214,9 @@ class HyperTag:
         # Add tags
         for tag in tags:
             for parent_tag in parent_tags:
+                # file_names = self.db.get_files_by_tag(tag, show_path=False)
+                # for file_name in file_names:
+                #    self.db.add_tag_to_file(parent_tag, file_name)
                 self.db.add_parent_tag_to_tag(parent_tag, tag)
                 # Remove tag dir in root level
                 try:
@@ -253,6 +264,7 @@ def main():
         "merge": ht.merge,
         "show": ht.show,
         "tags": ht.tags,
+        "metatags": ht.metatags,
         "query": ht.query,
         "set_hypertagfs_dir": ht.set_hypertagfs_dir,
         "daemon": daemon,

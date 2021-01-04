@@ -260,6 +260,10 @@ class Persistor:
         self.c.execute("DELETE FROM tags_files WHERE file_id = ? AND tag_id = ?", [file_id, tag_id])
         self.conn.commit()
 
+    def get_tag_name_by_id(self, tag_id: int):
+        self.c.execute("SELECT name FROM tags WHERE tag_id = ?", [tag_id])
+        return self.c.fetchone()[0]
+
     def get_tag_id_by_name(self, name: str):
         self.c.execute("SELECT tag_id FROM tags WHERE name LIKE ?", [name])
         return self.c.fetchone()[0]
@@ -269,8 +273,11 @@ class Persistor:
         return self.c.fetchone()[0]
 
     def remove_parent_tag_from_tag(self, parent_tag_name: str, tag_name: str):
-        parent_tag_id = self.get_tag_id_by_name(parent_tag_name)
-        tag_id = self.get_tag_id_by_name(tag_name)
+        try:
+            parent_tag_id = self.get_tag_id_by_name(parent_tag_name)
+            tag_id = self.get_tag_id_by_name(tag_name)
+        except TypeError:
+            return  # Abort if a tag is missing
         self.c.execute(
             """
             DELETE FROM tags_tags
@@ -390,6 +397,20 @@ class Persistor:
             """
         )
         data = [e[0] for e in self.c.fetchall()]
+        return data
+
+    def get_meta_tags_by_tag_name(self, tag_name):
+        self.c.execute(
+            """
+            SELECT tt.parent_tag_id
+            FROM tags as t, tags_tags as tt
+            WHERE 
+                tt.children_tag_id = t.tag_id AND
+                t.name LIKE ?
+            """,
+            (tag_name,),
+        )
+        data = [self.get_tag_name_by_id(e[0]) for e in self.c.fetchall()]
         return data
 
     def get_tags_by_file_name(self, file_name):
