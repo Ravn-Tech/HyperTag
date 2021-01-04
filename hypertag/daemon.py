@@ -1,6 +1,7 @@
 """ Daemon process monitoring changes in HyperTagFS """
 import os
 import time
+import re
 from pathlib import Path
 from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
@@ -33,7 +34,10 @@ class ChangeHandler(FileSystemEventHandler):
 
             ht = HyperTag()
             try:
-                query_results = ht.query(*query.split(" "), path=True)
+                args = re.findall(r"'.*?'|\".*?\"|\S+", query)
+                args = [e.replace('"', "") for e in args]
+                args = [e.replace("'", "") for e in args]
+                query_results = ht.query(*args, path=True)
                 for fp in query_results:
                     file_path = Path(fp)
                     os.symlink(file_path, path / file_path.name)
