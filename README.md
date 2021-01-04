@@ -70,6 +70,19 @@ Print paths:
 - SQLite3 serves as the meta data storage engine (located at `~/.config/hypertag/hypertag.db`)
 - Symbolic links are used to create the HyperTagFS directory structure
 
+## Development
+- Clone repo: ```$ git clone https://github.com/SeanPedersen/HyperTag.git```
+- `$ cd HyperTag/`
+- Install [Poetry](https://python-poetry.org/docs/#installation)
+- Install dependencies: `$ poetry install`
+- Activate virtual environment: `$ poetry shell`
+- Run all tests & show coverage stats: ```$ pytest -v --cov```
+- Run Black formatter: ```$ black hypertag/```
+- Run PyLint: ```$ pylint **/*.py```
+- Run MyPy: ```$ mypy **/*.py```
+- Run Bandit: ```$ bandit --exclude tests/ -r .```
+- Run HyperTag: ```$ python -m hypertag```
+
 ## Inspiration
 This project is inspired by other existing open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go
