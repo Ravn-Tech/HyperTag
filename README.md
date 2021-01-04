@@ -98,7 +98,13 @@ Visualizes the metatag graph hierarchy (saved at HyperTagFS root)
 ```$ hypertag graph```
 
 Specify [layout algorithm](https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms) (default: fruchterman_reingold):
+
 ```$ hypertag graph --layout=kamada_kawai```
+
+### Generate HyperTagFS
+Generate file system based representation of your files and tags using symbolic links and directories
+
+```$ hypertag mount```
 
 ## Architecture
 - Python powers HyperTag

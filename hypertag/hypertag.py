@@ -24,8 +24,8 @@ class HyperTag:
         """ Set path for HyperTagFS directory """
         self.db.set_hypertagfs_dir(path)
 
-    def mount(self, root_dir, parent_tag_id=None):
-        """ Add file system tag representation using symlinks """
+    def mount(self, root_dir=None, parent_tag_id=None):
+        """ Generate HyperTagFS: tag representation using symlinks """
         if parent_tag_id is None:
             print("Updating HyperTagFS...")
             graph()
@@ -34,6 +34,8 @@ class HyperTag:
             tag_ids_names = self.db.get_tag_id_children_ids_names(parent_tag_id)
 
         leaf_tag_ids = {tag_id[0] for tag_id in self.db.get_leaf_tag_ids()}
+        if root_dir is None:
+            root_dir = self.root_dir
         root_path = Path(root_dir)
         for tag_id, name in tag_ids_names:
             file_paths_names = self.db.get_file_paths_names_by_tag_id(tag_id)
@@ -268,6 +270,7 @@ def main():
         "metatags": ht.metatags,
         "query": ht.query,
         "set_hypertagfs_dir": ht.set_hypertagfs_dir,
+        "mount": ht.mount,
         "daemon": daemon,
         "graph": graph,
     }
