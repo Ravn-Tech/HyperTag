@@ -16,7 +16,7 @@ class Persistor:
         self.hypertagfs_name = "HyperTagFS"
         self.ignore_list_name = "ignore_list"
         self.ignore_list = ["node_modules", "__pycache__"]
-        self.conn = sqlite3.connect(path)
+        self.conn = sqlite3.connect(str(path))
         self.c = self.conn.cursor()
         self.file_groups_types = {
             "Images": ["jpg", "png", "svg", "tif", "ico", "icns"],
@@ -90,8 +90,9 @@ class Persistor:
             CREATE TABLE IF NOT EXISTS
             files(
                 file_id INTEGER PRIMARY KEY,
-                name TEXT,
-                path TEXT UNIQUE
+                name TEXT NOT NULL,
+                path TEXT UNIQUE NOT NULL,
+                embedding_vector TEXT
             )
             """
         )
@@ -101,7 +102,7 @@ class Persistor:
             CREATE TABLE IF NOT EXISTS
             tags(
                 tag_id INTEGER PRIMARY KEY,
-                name TEXT UNIQUE
+                name TEXT UNIQUE NOT NULL
             )
             """
         )
@@ -232,6 +233,43 @@ class Persistor:
         tag_id = self.get_tag_id_by_name(name)
         return tag_id
 
+    def add_file_embedding_vector(self, file_path: str, embedding_vector: str):
+        self.c.execute(
+            """
+            UPDATE OR IGNORE files
+            SET
+                embedding_vector = ?
+            WHERE
+                path = ?
+            """,
+            [str(embedding_vector), file_path],
+        )
+
+    def get_file_embedding_vectors(self, file_paths):
+        # Returns list of (file_id, embedding_vector)
+        file_embedding_vectors = []
+        for file_path in file_paths:
+            self.c.execute(
+                """
+                SELECT path, embedding_vector
+                FROM files
+                WHERE embedding_vector IS NOT NULL AND 
+                    path = ?
+                """,
+                (str(file_path),),
+            )
+            result = self.c.fetchone()
+            if result:
+                path, embedding_vector = result
+                if embedding_vector != "nan":
+                    file_embedding_vectors.append((path, embedding_vector))
+        return file_embedding_vectors
+
+    def get_unindexed_file_paths(self):
+        self.c.execute("SELECT path FROM files WHERE embedding_vector is NULL")
+        data = [e[0] for e in self.c.fetchall()]
+        return data
+
     def get_files(self, show_path):
         if show_path:
             self.c.execute("SELECT path FROM files")
@@ -271,6 +309,10 @@ class Persistor:
 
     def get_file_id_by_name(self, name: str):
         self.c.execute("SELECT file_id FROM files WHERE name LIKE ?", [name])
+        return self.c.fetchone()[0]
+
+    def get_file_path_by_id(self, file_id: int):
+        self.c.execute("SELECT file_path FROM files WHERE file_id = ?", [file_id])
         return self.c.fetchone()[0]
 
     def remove_parent_tag_from_tag(self, parent_tag_name: str, tag_name: str):

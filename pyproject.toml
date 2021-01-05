@@ -16,7 +16,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.6.1"
 fire = "^0.3.1"
 tqdm = "^4.55.0"
 filetype = "^1.0.7"
@@ -24,6 +24,11 @@ watchdog = "^1.0.2"
 python-igraph = "^0.8.3"
 cairocffi = "^1.2.0"
 fuzzywuzzy = {extras = ["speedup"], version = "^0.18.0"}
+PyPDF2 = "^1.26.0"
+wordninja = "^2.0.0"
+ftfy = "^5.8"
+textract = "^1.6.3"
+sentence-transformers = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
