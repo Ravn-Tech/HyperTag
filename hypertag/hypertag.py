@@ -68,7 +68,7 @@ class HyperTag:
 
         # Preprocess using multi-processing
         pool = multiprocessing.Pool(processes=8)
-
+        print("Preprocessing...")
         with tqdm(total=len(compatible_files)) as t:
             for file_path, sentences in pool.imap_unordered(extract_clean_text, args):
                 t.update(1)
