@@ -51,7 +51,7 @@ Merge all associations (files & tags) of tag A into tag B
 ```$ hypertag merge human into "Homo Sapiens"```
 
 ### Query using Set Theory
-Print file names fuzzy matching the query. Nesting is currently not supported, queries are evaluated from left to right
+Print file names of the resulting set matching the query. Queries are composed of tags and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right
 
 Print paths: ```$ hypertag query human --path```
 
