@@ -46,7 +46,10 @@ class HyperTag:
         """ Vectorize text files  """
         # TODO: index images
         # TODO: auto index on file addition (import)
-        print("Vectorizing text documents... (heavy computing incoming)")
+        print(f"Vectorizing text documents...")
+        cuda = torch.cuda.is_available()
+        if cuda:
+            print("Using CUDA to speed stuff up")
         file_paths = self.db.get_unindexed_file_paths()
         i = 0
         compatible_files = self.get_text_documents(file_paths)
