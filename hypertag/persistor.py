@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from typing import Union, Optional, Tuple, List
 from pathlib import Path
 import filetype  # type: ignore
 from fuzzywuzzy import fuzz, process  # type: ignore
@@ -265,9 +266,18 @@ class Persistor:
                     file_embedding_vectors.append((path, embedding_vector))
         return file_embedding_vectors
 
-    def get_unindexed_file_paths(self):
-        self.c.execute("SELECT path FROM files WHERE embedding_vector is NULL")
+    def get_indexed_file_paths(self, show_path):
+        if show_path:
+            head = "SELECT path"
+        else:
+            head = "SELECT name"
+        self.c.execute(head + " FROM files WHERE embedding_vector is NOT NULL")
         data = [e[0] for e in self.c.fetchall()]
+        return data
+
+    def get_unindexed_file_paths(self) -> List[str]:
+        self.c.execute("SELECT path FROM files WHERE embedding_vector is NULL")
+        data = [str(e[0]) for e in self.c.fetchall()]
         return data
 
     def get_files(self, show_path):

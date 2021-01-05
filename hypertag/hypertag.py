@@ -1,5 +1,6 @@
 import time
 import os
+import multiprocessing
 from multiprocessing import Process
 from shutil import rmtree
 import sqlite3
@@ -13,7 +14,7 @@ import filetype  # type: ignore
 from .persistor import Persistor
 from .daemon import start
 from .graph import graph
-from .vectorizer import vectorize_text_document, compute_text_embedding, vector_search
+from .vectorizer import extract_clean_text, clean_transform, compute_text_embedding, vector_search
 
 
 class HyperTag:
@@ -24,14 +25,13 @@ class HyperTag:
         self.root_dir = Path(self.db.get_hypertagfs_dir())
         os.makedirs(self.root_dir, exist_ok=True)
 
-    def get_text_documents(self, file_paths) -> List[Tuple[str, str]]:
+    def get_text_documents(self, file_paths: List[str]) -> List[Tuple[str, str]]:
         doc_id = self.db.get_tag_id_by_name("Documents")
         doc_types = set()
         for tag_id, _type_name in self.db.get_tag_id_children_ids_names(doc_id):
             doc_types.add(self.db.get_tag_name_by_id(tag_id))
-        print(doc_types)
-        print(len(file_paths))
-        # Filter supported files
+
+        # Keep only text files
         compatible_files = []
         for file_path in file_paths:
             file_type_guess = filetype.guess(str(file_path))
@@ -39,60 +39,78 @@ class HyperTag:
                 continue
             file_type = file_type_guess.extension.lower()
             if file_type in doc_types:
-                compatible_files.append((file_path, file_type))
+                compatible_files.append((str(file_path), file_type))
         return compatible_files
 
     def index(self):
-        """ Vectorize text files TODO: images """
+        """ Vectorize text files  """
+        # TODO: index images
+        # TODO: auto index on file addition (import)
         print("Vectorizing text documents... (heavy computing incoming)")
         file_paths = self.db.get_unindexed_file_paths()
         i = 0
         compatible_files = self.get_text_documents(file_paths)
+        min_words = 5
+        min_word_length = 4
+        args = []
+        for file_path, file_type in compatible_files:
+            args.append((file_path, file_type, min_words, min_word_length))
+        inference_tuples = []
+
+        # Preprocess using multi-processing
+        pool = multiprocessing.Pool(processes=8)
+
+        with tqdm(total=len(compatible_files)) as t:
+            for file_path, sentences in pool.imap_unordered(extract_clean_text, args):
+                t.update(1)
+                if sentences:
+                    inference_tuples.append((file_path, sentences))
+        print(f"Cleaned {len(inference_tuples)} text docs successfully!")
+        print("Starting inference...")
         # Compute embeddings
-        for file_path, file_type in tqdm(compatible_files):
-            document_vector = vectorize_text_document(file_path, file_type)
+        for file_path, sentences in tqdm(inference_tuples):
+            document_vector = compute_text_embedding(sentences)
             if (
                 document_vector is not None
                 and type(document_vector) is torch.Tensor
                 and document_vector.shape[0] == 768
             ):
-                self.db.add_file_embedding_vector(file_path, json.dumps(document_vector))
+                self.db.add_file_embedding_vector(file_path, json.dumps(document_vector.tolist()))
                 self.db.conn.commit()
                 i += 1
             else:
-                print("Failed to parse file - skipping...")
+                print(type(document_vector))
+                print("Failed to parse file - skipping:", file_path)
         print(f"Vectorized {str(i)} file/s.")
 
-    def search(self, text_query: str):
-        """ Returns best matching text documents """
+    def search(self, text_query: str, path=False, top_k=10, score=False):
+        """ Execute a semantic search that returns best matching text documents """
         text_document_tuples = self.get_text_documents(self.db.get_files(show_path=True))
         text_document_paths = [path for path, _file_type in text_document_tuples]
         corpus = self.db.get_file_embedding_vectors(text_document_paths)
         if len(corpus) == 0:
             print("No relevant files indexed...")
             return
-        query_vector = compute_text_embedding(text_query, min_words=1)
+        sentence_query = clean_transform(text_query, 1, 1)
+        query_vector = compute_text_embedding(sentence_query)
         corpus_paths = []
         corpus_vectors = []
         for path, embedding_vector in corpus:
-            try:
-                corpus_vectors.append(json.loads(embedding_vector))
-            except:
-                embedding_vector = embedding_vector.replace("[", "")
-                embedding_vector = embedding_vector.replace("]", "")
-                embedding_vector = embedding_vector.replace("\n", " ")
-                embedding_vector = [float(e.strip()) for e in embedding_vector.split(" ") if e]
-                corpus_vectors.append(embedding_vector)
-
+            corpus_vectors.append(json.loads(embedding_vector))
             corpus_paths.append(path)
 
-        print("corpus_vectors:", len(corpus_vectors), len(corpus_paths))
         corpus_tensor = torch.Tensor(corpus_vectors)
-        top_matches = vector_search(query_vector, corpus_tensor, top_k=10)
-        print("MATCHES:")
+        top_matches = vector_search(query_vector, corpus_tensor, top_k=top_k)
         for match in top_matches[0]:
             corpus_id, score = match["corpus_id"], match["score"]
-            print(corpus_paths[corpus_id].split("/")[-1], f"({score})")
+            file_path = corpus_paths[corpus_id]
+            file_name = file_path.split("/")[-1]
+            if path:
+                file_name = file_path
+            if score:
+                print(file_name, f"({score})")
+            else:
+                print(file_name)
 
     def set_hypertagfs_dir(self, path: str):
         """ Set path for HyperTagFS directory """
@@ -182,6 +200,8 @@ class HyperTag:
         """ Display all tags (default) or files """
         if mode == "files":
             names = self.db.get_files(path)
+        elif mode == "index":
+            names = self.db.get_indexed_file_paths(path)
         elif mode == "tags":
             names = self.db.get_tags()
         for name in names:
