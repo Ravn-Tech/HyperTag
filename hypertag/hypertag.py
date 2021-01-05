@@ -14,7 +14,6 @@ import filetype  # type: ignore
 from .persistor import Persistor
 from .daemon import start
 from .graph import graph
-from .vectorizer import extract_clean_text, clean_transform, compute_text_embedding, vector_search
 
 
 class HyperTag:
@@ -47,6 +46,13 @@ class HyperTag:
         # TODO: index images
         # TODO: auto index on file addition (import)
         print(f"Vectorizing text documents...")
+        from .vectorizer import (
+            extract_clean_text,
+            clean_transform,
+            compute_text_embedding,
+            vector_search,
+        )
+
         cuda = torch.cuda.is_available()
         if cuda:
             print("Using CUDA to speed stuff up")
@@ -88,6 +94,13 @@ class HyperTag:
 
     def search(self, text_query: str, path=False, top_k=10, score=False):
         """ Execute a semantic search that returns best matching text documents """
+        from .vectorizer import (
+            extract_clean_text,
+            clean_transform,
+            compute_text_embedding,
+            vector_search,
+        )
+
         text_document_tuples = self.get_text_documents(self.db.get_files(show_path=True))
         text_document_paths = [path for path, _file_type in text_document_tuples]
         corpus = self.db.get_file_embedding_vectors(text_document_paths)
@@ -98,20 +111,20 @@ class HyperTag:
         query_vector = compute_text_embedding(sentence_query)
         corpus_paths = []
         corpus_vectors = []
-        for path, embedding_vector in corpus:
+        for doc_path, embedding_vector in corpus:
             corpus_vectors.append(json.loads(embedding_vector))
-            corpus_paths.append(path)
+            corpus_paths.append(doc_path)
 
         corpus_tensor = torch.Tensor(corpus_vectors)
         top_matches = vector_search(query_vector, corpus_tensor, top_k=top_k)
         for match in top_matches[0]:
-            corpus_id, score = match["corpus_id"], match["score"]
+            corpus_id, score_value = match["corpus_id"], match["score"]
             file_path = corpus_paths[corpus_id]
             file_name = file_path.split("/")[-1]
             if path:
                 file_name = file_path
             if score:
-                print(file_name, f"({score})")
+                print(file_name, f"({score_value})")
             else:
                 print(file_name)
 
