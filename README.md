@@ -12,6 +12,8 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
 
+**Fuzzy Matching Queries**: HyperTag uses fuzzy matching to minimize friction in the unlikely case of a typo.
+
 **File Type Groups**: HyperTag automatically creates folders containing common files (e.g. Images: jpg, png, etc., Documents: txt, pdf, etc., Source Code: py, js, etc.), which can be found in ```HyperTagFS```.
 
 **HyperTagFS Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation with automatic query result population.
@@ -59,9 +61,11 @@ Merges all associations (files & tags) of tag A into tag B
 ```$ hypertag merge human into "Homo Sapiens"```
 
 ### Query using Set Theory
-Prints file names matching the query. Nesting is currently not supported, queries are evaluated from left to right
+Prints file names fuzzy matching the query. Nesting is currently not supported, queries are evaluated from left to right
 
 Print paths: ```$ hypertag query human --path```
+
+Disable fuzzy matching: ```$ hypertag query human --fuzzy=0```
 
 Default operand is AND (intersection): <br>
 ```$ hypertag query human "Homo Sapiens"```

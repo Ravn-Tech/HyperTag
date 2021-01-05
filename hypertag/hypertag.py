@@ -113,7 +113,7 @@ class HyperTag:
         for name in names:
             print(name)
 
-    def query(self, *query, path=False):
+    def query(self, *query, path=False, fuzzy=True):
         """Query files using set operands.
         Supported operands:
           - and : intersection (default)
@@ -122,11 +122,11 @@ class HyperTag:
         """
         # TODO: Parse AST to support queries with brackets
         operands = {"and", "or", "minus"}
-        results = set(self.db.get_files_by_tag(query[0], path))
+        results = set(self.db.get_files_by_tag(query[0], path, fuzzy=fuzzy))
         current_operand = None
         for query_symbol in query[1:]:
             if query_symbol not in operands:
-                file_names = set(self.db.get_files_by_tag(query_symbol, path))
+                file_names = set(self.db.get_files_by_tag(query_symbol, path, fuzzy=fuzzy))
                 if current_operand == "or":
                     results = results.union(file_names)
                 elif current_operand == "minus":

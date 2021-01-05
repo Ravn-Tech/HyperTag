@@ -152,6 +152,20 @@ six = "*"
 termcolor = "*"
 
 [[package]]
+name = "fuzzywuzzy"
+version = "0.18.0"
+description = "Fuzzy string matching in python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+python-levenshtein = {version = ">=0.12", optional = true, markers = "extra == \"speedup\""}
+
+[package.extras]
+speedup = ["python-levenshtein (>=0.12)"]
+
+[[package]]
 name = "gitdb"
 version = "4.0.5"
 description = "Git Object Database"
@@ -368,6 +382,14 @@ texttable = ">=1.6.2"
 plotting = ["pycairo (>=1.18.0)"]
 
 [[package]]
+name = "python-levenshtein"
+version = "0.12.0"
+description = "Python extension for computing string edit distances and similarities."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pyyaml"
 version = "5.3.1"
 description = "YAML parser and emitter for Python"
@@ -516,7 +538,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "4e13c10e2f1c537548bbec597fa28226233101755613a4310c9e45d2c64b05d2"
+content-hash = "53038c933dcc92b096c5db99c054489be6c998f7bcc5a5ef6a2cd1d82391fffe"
 
 [metadata.files]
 appdirs = [
@@ -601,6 +623,10 @@ filetype = [
 ]
 fire = [
     {file = "fire-0.3.1.tar.gz", hash = "sha256:9736a16227c3d469e5d2d296bce5b4d8fa8d7851e953bda327a455fc2994307f"},
+]
+fuzzywuzzy = [
+    {file = "fuzzywuzzy-0.18.0-py2.py3-none-any.whl", hash = "sha256:928244b28db720d1e0ee7587acf660ea49d7e4c632569cad4f1cd7e68a5f0993"},
+    {file = "fuzzywuzzy-0.18.0.tar.gz", hash = "sha256:45016e92264780e58972dca1b3d939ac864b78437422beecebb3095f8efd00e8"},
 ]
 gitdb = [
     {file = "gitdb-4.0.5-py3-none-any.whl", hash = "sha256:91f36bfb1ab7949b3b40e23736db18231bf7593edada2ba5c3a174a7b23657ac"},
@@ -741,6 +767,9 @@ python-igraph = [
     {file = "python_igraph-0.8.3-pp36-pypy36_pp73-macosx_10_9_x86_64.whl", hash = "sha256:c290c4d0586cf2a4353b0b204cac365b02626bf96e7f7dba265a6265b24806c5"},
     {file = "python_igraph-0.8.3-pp36-pypy36_pp73-manylinux2010_x86_64.whl", hash = "sha256:52aba4fbc92cac1482aadb69a248b64ddbd594ef9b293e4119b428435cfd8cd2"},
     {file = "python_igraph-0.8.3-pp36-pypy36_pp73-win32.whl", hash = "sha256:ab063dbef3d3d442b9b351049961a81b4c281d0700d8e4f75f0a0c157e84864a"},
+]
+python-levenshtein = [
+    {file = "python-Levenshtein-0.12.0.tar.gz", hash = "sha256:033a11de5e3d19ea25c9302d11224e1a1898fe5abd23c61c7c360c25195e3eb1"},
 ]
 pyyaml = [
     {file = "PyYAML-5.3.1-cp27-cp27m-win32.whl", hash = "sha256:74809a57b329d6cc0fdccee6318f44b9b8649961fa73144a98735b0aaf029f1f"},

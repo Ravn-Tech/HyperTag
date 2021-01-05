@@ -2,6 +2,7 @@ import os
 import sqlite3
 from pathlib import Path
 import filetype  # type: ignore
+from fuzzywuzzy import fuzz, process  # type: ignore
 
 
 class Persistor:
@@ -442,7 +443,21 @@ class Persistor:
         data = self.c.fetchall()
         return data
 
-    def get_files_by_tag(self, tag_name, show_path):
+    def get_files_by_tag(self, tag_name, show_path, fuzzy):
+        if fuzzy:
+            matches = process.extract(tag_name, self.get_tags(), limit=5)
+            best_match = None, None
+            best_dist = float("inf")
+            for match, ratio in matches:
+                length_dist = abs(len(match) - len(tag_name))
+                length_overlap = len(set(tag_name).intersection(match))
+                dist = ((length_dist ** 0.5) / ((length_overlap + 1) ** 3)) / ratio
+                if dist < best_dist:
+                    best_dist = dist
+                    best_match = match, ratio
+
+            tag_name, ratio = best_match
+            print(f"Fuzzy matched: {tag_name} ({best_dist*100:.5f})")
         if show_path:
             select = "SELECT f.path"
         else:
