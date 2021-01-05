@@ -7,7 +7,7 @@ Available on [PyPI](https://pypi.org/project/hypertag/)
 
 `$ pip install hypertag`
 
-## Quick Start
+## Overview
 HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
@@ -25,18 +25,8 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 ## CLI Functions
 
-### Start HyperTagFS daemon
-Starts process watching HyperTagFS dir for user changes
-
-```$ hypertag daemon```
-
-### Set HyperTagFS directory path
-Default is the user's home directory
-
-```$ hypertag set_hypertagfs_dir path/to/directory```
-
 ### Import existing directory recursively
-Import files with tags inferred from existing directory hierarchy
+Import files with tags inferred from the existing directory hierarchy
 
 ```$ hypertag import path/to/directory```
 
@@ -56,12 +46,12 @@ Metatag tag/s to create tag hierarchies
 ```$ hypertag metatag human with animal```
 
 ### Merge tags
-Merges all associations (files & tags) of tag A into tag B
+Merge all associations (files & tags) of tag A into tag B
 
 ```$ hypertag merge human into "Homo Sapiens"```
 
 ### Query using Set Theory
-Prints file names fuzzy matching the query. Nesting is currently not supported, queries are evaluated from left to right
+Print file names fuzzy matching the query. Nesting is currently not supported, queries are evaluated from left to right
 
 Print paths: ```$ hypertag query human --path```
 
@@ -97,7 +87,7 @@ Print paths:
 ```$ hypertag show files --path```
 
 ### Visualize HyperTag Graph
-Visualizes the metatag graph hierarchy (saved at HyperTagFS root)
+Visualize the metatag graph hierarchy (saved at HyperTagFS root)
 
 ```$ hypertag graph```
 
@@ -109,6 +99,16 @@ Specify [layout algorithm](https://igraph.org/python/doc/tutorial/tutorial.html#
 Generate file system based representation of your files and tags using symbolic links and directories
 
 ```$ hypertag mount```
+
+### Start HyperTagFS daemon
+Start process watching HyperTagFS dir for user changes
+
+```$ hypertag daemon```
+
+### Set HyperTagFS directory path
+Default is the user's home directory
+
+```$ hypertag set_hypertagfs_dir path/to/directory```
 
 ## Architecture
 - Python powers HyperTag
