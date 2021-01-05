@@ -133,4 +133,4 @@ This project is inspired by other existing open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go
 - [SuperTag](https://github.com/amoffat/supertag): Written in Rust
 
-**What is the point of HyperTag's existence?** HyperTag offers many unique features such as the import, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base is extremely small (<700 LOC) in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to modify / contribute yourself.
+**What is the point of HyperTag's existence?** HyperTag offers many unique features such as the import, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying extremely small at <700 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
