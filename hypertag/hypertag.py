@@ -222,16 +222,19 @@ class HyperTag:
             # print("MetaTagged", tag, "with", parent_tags)
         if commit:
             self.db.conn.commit()
-        # Remount (everything is mounted)
-        if remount:
-            self.mount(self.root_dir)
-        # Remove tag/s dir in root level
+
         for tag in tags:
             for parent_tag in parent_tags:
+                # Remove parent_tag dir in all levels
+                self.rmdir(self.root_dir, parent_tag)
+                # Remove tag dir in root level
                 try:
                     rmtree(self.root_dir / tag)
                 except:  # nosec
                     pass  # Ignore if non existing
+        # Remount (everything is mounted)
+        if remount:
+            self.mount(self.root_dir)
 
     def rmdir(self, directory, del_dir_name):
         # Delete dirs named del_dir_name in directory recursively
