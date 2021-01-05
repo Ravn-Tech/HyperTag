@@ -31,7 +31,7 @@ def graph(layout="fruchterman_reingold"):
         i += 1
 
     edges = [(edge_id_map[a], edge_id_map[b]) for a, b in raw_edges]
-    g = Graph()
+    g = Graph(directed=True)
     g.add_vertices(tags)
     g.add_edges(edges)
     visual_style = {}
