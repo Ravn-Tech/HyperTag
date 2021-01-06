@@ -374,6 +374,7 @@ def help():
     print(
         """
     Found a bug or simply feeling lost? Do not despair, you are not alone! Let us know at https://github.com/SeanPedersen/HyperTag/issues
+    Print available CLI functions: hypertag
     Print available CLI flags for all commands: hypertag command --help
     """
     )
