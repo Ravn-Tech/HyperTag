@@ -135,10 +135,10 @@ Default is the user's home directory
 - Install dependencies: `$ poetry install`
 - Activate virtual environment: `$ poetry shell`
 - Run all tests: ```$ pytest -v```
-- Run Black formatter: ```$ black hypertag/```
-- Run PyLint: ```$ pylint **/*.py```
-- Run MyPy: ```$ mypy **/*.py```
-- Run Bandit: ```$ bandit --exclude tests/ -r .```
+- Run formatter: ```$ black hypertag/```
+- Run linter: ```$ flake8```
+- Run type checking: ```$ mypy **/*.py```
+- Run security checking: ```$ bandit --exclude tests/ -r .```
 - Run HyperTag: ```$ python -m hypertag```
 
 ## Inspiration
