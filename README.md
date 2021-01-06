@@ -55,8 +55,8 @@ Merge all associations (files & tags) of tag A into tag B
 ### Query using Set Theory
 Print file names of the resulting set matching the query. Queries are composed of tags and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right
 
-Print paths: ```$ hypertag query human --path```
-
+Print paths: ```$ hypertag query human --path```<br>
+Print fuzzy matched tag: ```$ hypertag query man --verbose``` <br>
 Disable fuzzy matching: ```$ hypertag query human --fuzzy=0```
 
 Default operand is AND (intersection): <br>
