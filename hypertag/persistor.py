@@ -529,7 +529,7 @@ class Persistor:
         data = self.c.fetchall()
         return data
 
-    def get_files_by_tag(self, tag_name, show_path, fuzzy):
+    def get_files_by_tag(self, tag_name, show_path, fuzzy, verbose=False):
         if fuzzy:
             matches = process.extract(tag_name, self.get_tags(), limit=5)
             best_match = None, None
@@ -543,7 +543,8 @@ class Persistor:
                     best_match = match, ratio
 
             tag_name, ratio = best_match
-            print(f"Fuzzy matched: {tag_name} ({best_dist*100:.5f})")
+            if verbose:
+                print(f"Fuzzy matched: {tag_name} ({best_dist*100:.5f})")
         if show_path:
             select = "SELECT f.path"
         else:
