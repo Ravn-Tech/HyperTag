@@ -17,7 +17,7 @@ from .persistor import Persistor
 class Vectorizer:
     def __init__(self):
         os.environ["TOKENIZERS_PARALLELISM"] = "true"
-        model_name = "average_word_embeddings_glove.6B.300d"  # "stsb-distilbert-base" (slower)
+        model_name = "stsb-distilbert-base"  # "average_word_embeddings_glove.6B.300d"
         print("Loading", model_name)
         self.model = SentenceTransformer(model_name)
 
