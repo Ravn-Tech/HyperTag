@@ -1,13 +1,10 @@
 import os
-from multiprocessing import Process, Pool
+from multiprocessing import Process
 from shutil import rmtree
 import sqlite3
 from pathlib import Path
-import json
-from typing import List, Tuple
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
-import filetype  # type: ignore
 from .persistor import Persistor
 from .daemon import start
 from .graph import graph
@@ -21,118 +18,17 @@ class HyperTag:
         self.root_dir = Path(self.db.get_hypertagfs_dir())
         os.makedirs(self.root_dir, exist_ok=True)
 
-    def get_text_documents(self, file_paths: List[str]) -> List[Tuple[str, str]]:
-        doc_id = self.db.get_tag_id_by_name("Documents")
-        doc_types = set()
-        for tag_id, _type_name in self.db.get_tag_id_children_ids_names(doc_id):
-            doc_types.add(self.db.get_tag_name_by_id(tag_id))
-
-        # Keep only text files
-        compatible_files = []
-        for file_path in file_paths:
-            file_type_guess = filetype.guess(str(file_path))
-            if file_type_guess is None:
-                continue
-            file_type = file_type_guess.extension.lower()
-            if file_type in doc_types:
-                compatible_files.append((str(file_path), file_type))
-        return compatible_files
-
     def index(self, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize text files (needed for semantic search) """
-        # TODO: index images
-        # TODO: auto index on file addition (import)
-        print("Vectorizing text documents...")
-        from .vectorizer import (
-            extract_clean_text,
-            compute_text_embedding,
-        )
-        import torch
+        from .vectorizer import index
 
-        cuda = torch.cuda.is_available()
-        if cuda:
-            print("Using CUDA to speed stuff up")
-        else:
-            print("CUDA not available (this might take a while)")
-        if cache:
-            print("Caching cleaned texts (database will grow big)")
-        if rebuild:
-            print("Rebuilding index")
-            file_paths = self.db.get_indexed_file_paths()
-        else:
-            file_paths = self.db.get_unindexed_file_paths()
-        i = 0
-        compatible_files = self.get_text_documents(file_paths)
-        min_words = 5
-        min_word_length = 4
-        args = []
-        for file_path, file_type in compatible_files:
-            args.append((file_path, file_type, cache, min_words, min_word_length))
-        inference_tuples = []
-
-        # Preprocess using multi-processing (default uses all available cores)
-        if cores <= 0:
-            n_cores = os.cpu_count()
-        else:
-            n_cores = cores
-        pool = Pool(processes=n_cores)
-        print(f"Preprocessing texts using {n_cores} cores...")
-        with tqdm(total=len(compatible_files)) as t:
-            for file_path, sentences in pool.imap_unordered(extract_clean_text, args):
-                t.update(1)
-                if sentences:
-                    inference_tuples.append((file_path, sentences))
-        print(f"Cleaned {len(inference_tuples)} text docs successfully")
-        print("Starting inference...")
-        # Compute embeddings
-        for file_path, sentences in tqdm(inference_tuples):
-            document_vector = compute_text_embedding(sentences)
-            if (
-                document_vector is not None
-                and type(document_vector) is list
-                and len(document_vector) > 0
-            ):
-                self.db.add_file_embedding_vector(file_path, json.dumps(document_vector))
-                self.db.conn.commit()
-                i += 1
-            else:
-                print(type(document_vector))
-                print("Failed to parse file - skipping:", file_path)
-        print(f"Vectorized {str(i)} file/s successfully")
+        index(rebuild, cache, cores)
 
     def search(self, text_query: str, path=False, top_k=10, score=False):
         """ Execute a semantic search that returns best matching text documents """
-        from .vectorizer import (
-            clean_transform,
-            compute_text_embedding,
-            vector_search,
-        )
+        from .vectorizer import search
 
-        text_document_tuples = self.get_text_documents(self.db.get_files(show_path=True))
-        text_document_paths = [path for path, _file_type in text_document_tuples]
-        corpus = self.db.get_file_embedding_vectors(text_document_paths)
-        if len(corpus) == 0:
-            print("No relevant files indexed...")
-            return
-        sentence_query = clean_transform(text_query, 0, 1)
-        query_vector = compute_text_embedding(sentence_query)
-        corpus_paths = []
-        corpus_vectors = []
-        for doc_path, embedding_vector in corpus:
-            corpus_vectors.append(json.loads(embedding_vector))
-            corpus_paths.append(doc_path)
-
-        top_matches = vector_search(query_vector, corpus_vectors, top_k=top_k)
-        for match in top_matches[0]:
-            corpus_id, score_value = match["corpus_id"], match["score"]
-            file_path = corpus_paths[corpus_id]
-            file_name = file_path.split("/")[-1]
-            if path:
-                file_name = file_path
-            if score:
-                print(file_name, f"({score_value})")
-            else:
-                print(file_name)
+        return search(text_query, path, top_k, score)
 
     def set_hypertagfs_dir(self, path: str):
         """ Set path for HyperTagFS directory """
