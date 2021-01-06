@@ -1,111 +1,90 @@
 import os
 import re
 import json
-from multiprocessing import Pool
 from typing import Union, Tuple, List
 from pathlib import Path
 import filetype
-from tqdm import tqdm
 import torch
 from sentence_transformers import SentenceTransformer  # type: ignore
 from sentence_transformers.util import semantic_search  # type: ignore
+import PyPDF2  # type: ignore
+import textract  # type: ignore
+import wordninja  # type: ignore
+from ftfy import fix_text  # type: ignore
 from .persistor import Persistor
 
 
-os.environ["TOKENIZERS_PARALLELISM"] = "true"
-model_name = "average_word_embeddings_glove.6B.300d"  # "stsb-distilbert-base" (slower)
-model = SentenceTransformer(model_name)  # TODO: Optimize only load *once* in daemon
+class Vectorizer:
+    def __init__(self):
+        os.environ["TOKENIZERS_PARALLELISM"] = "true"
+        model_name = "average_word_embeddings_glove.6B.300d"  # "stsb-distilbert-base" (slower)
+        self.model = SentenceTransformer(model_name)
 
-
-def index(rebuild=False, cache=False, cores: int = 0):
-    """ Vectorize text files (needed for semantic search) """
-    # TODO: index images
-    # TODO: auto index on file addition (import)
-    print("Vectorizing text documents...")
-    cuda = torch.cuda.is_available()
-    if cuda:
-        print("Using CUDA to speed stuff up")
-    else:
-        print("CUDA not available (this might take a while)")
-    if cache:
-        print("Caching cleaned texts (database will grow big)")
-    with Persistor() as db:
-        if rebuild:
-            print("Rebuilding index")
-            file_paths = db.get_indexed_file_paths()
+    def compute_text_embedding(self, sentences: List[List[str]]) -> List[float]:
+        # Needed for glove model (slows down transformers -> remove when using)
+        sentence_strings = [" ".join(s) for s in sentences]
+        sentence_vectors = self.model.encode(sentence_strings, show_progress_bar=False)
+        if sentence_vectors.shape[0] > 0:
+            return torch.Tensor(sentence_vectors.mean(axis=0)).tolist()
         else:
-            file_paths = db.get_unindexed_file_paths()
-    i = 0
-    compatible_files = get_text_documents(file_paths)
-    min_words = 5
-    min_word_length = 4
-    args = []
-    for file_path, file_type in compatible_files:
-        args.append((file_path, file_type, cache, min_words, min_word_length))
-    inference_tuples = []
+            return torch.Tensor([sentence_vectors]).tolist()
 
-    # Preprocess using multi-processing (default uses all available cores)
-    if cores <= 0:
-        n_cores = os.cpu_count()
-    else:
-        n_cores = cores
-    pool = Pool(processes=n_cores)
-    print(f"Preprocessing texts using {n_cores} cores...")
-    with tqdm(total=len(compatible_files)) as t:
-        for file_path, sentences in pool.imap_unordered(extract_clean_text, args):
-            t.update(1)
-            if sentences:
-                inference_tuples.append((file_path, sentences))
-    print(f"Cleaned {len(inference_tuples)} text docs successfully")
-    print("Starting inference...")
-    # Compute embeddings
-    for file_path, sentences in tqdm(inference_tuples):
-        document_vector = compute_text_embedding(sentences)
-        if (
-            document_vector is not None
-            and type(document_vector) is list
-            and len(document_vector) > 0
-        ):
-            with Persistor() as db:
-                db.add_file_embedding_vector(file_path, json.dumps(document_vector))
-                db.conn.commit()
-            i += 1
-        else:
-            print(type(document_vector))
-            print("Failed to parse file - skipping:", file_path)
-    print(f"Vectorized {str(i)} file/s successfully")
+    def vector_search(self, query_vector: List[float], corpus_embeddings: List[List[float]], top_k):
+        return semantic_search(
+            torch.Tensor(query_vector), torch.Tensor(corpus_embeddings), top_k=top_k
+        )
 
+    def search(self, text_query: str, path=False, top_k=10, score=False):
+        """ Execute a semantic search that returns best matching text documents """
+        # Parse query: duplicate words marked with * (increases search weight)
+        parsed_query = []
+        rex = re.compile(r"\*+\w+")
+        args = re.findall(r"\*+'.*?'|\*+\".*?\"|\S+", text_query)
 
-def search(text_query: str, path=False, top_k=10, score=False):
-    """ Execute a semantic search that returns best matching text documents """
-    with Persistor() as db:
-        text_files = db.get_files(show_path=True)
-    text_document_tuples = get_text_documents(text_files)
-    text_document_paths = [path for path, _file_type in text_document_tuples]
-    with Persistor() as db:
-        corpus = db.get_file_embedding_vectors(text_document_paths)
-    if len(corpus) == 0:
-        print("No relevant files indexed...")
-        return
-    sentence_query = clean_transform(text_query, 0, 1)
-    query_vector = compute_text_embedding(sentence_query)
-    corpus_paths = []
-    corpus_vectors = []
-    for doc_path, embedding_vector in corpus:
-        corpus_vectors.append(json.loads(embedding_vector))
-        corpus_paths.append(doc_path)
+        for w in args:
+            if w.startswith("*"):
+                w = w.replace('"', "").replace("'", "")
+                replicate_n = rex.search(w).group().count("*")
+                for _ in range(replicate_n + 1):
+                    parsed_query.append(w[replicate_n:])
+            else:
+                parsed_query.append(w)
 
-    top_matches = vector_search(query_vector, corpus_vectors, top_k=top_k)
-    for match in top_matches[0]:
-        corpus_id, score_value = match["corpus_id"], match["score"]
-        file_path = corpus_paths[corpus_id]
-        file_name = file_path.split("/")[-1]
-        if path:
-            file_name = file_path
-        if score:
-            print(file_name, f"({score_value})")
-        else:
-            print(file_name)
+        parsed_text_query = " ".join(parsed_query)
+
+        with Persistor() as db:
+            text_files = db.get_files(show_path=True)
+        text_document_tuples = get_text_documents(text_files)
+        text_document_paths = [path for path, _file_type in text_document_tuples]
+        with Persistor() as db:
+            corpus = db.get_file_embedding_vectors(text_document_paths)
+        if len(corpus) == 0:
+            print("No relevant files indexed...")
+            return
+        sentence_query = clean_transform(parsed_text_query, 0, 1)
+        query_vector = self.compute_text_embedding(sentence_query)
+        corpus_paths = []
+        corpus_vectors = []
+        for doc_path, embedding_vector in corpus:
+            corpus_vectors.append(json.loads(embedding_vector))
+            corpus_paths.append(doc_path)
+
+        top_matches = self.vector_search(query_vector, corpus_vectors, top_k=top_k)
+        results = []
+        for match in top_matches[0]:
+            corpus_id, score_value = match["corpus_id"], match["score"]
+            file_path = corpus_paths[corpus_id]
+            file_name = file_path.split("/")[-1]
+            if path:
+                file_name = file_path
+            if score:
+                result = f"{file_name} ({score_value})"
+                results.append(result)
+                print(result)
+            else:
+                results.append(file_name)
+                print(file_name)
+        return results
 
 
 def get_text_documents(file_paths: List[str]) -> List[Tuple[str, str]]:
@@ -127,10 +106,6 @@ def get_text_documents(file_paths: List[str]) -> List[Tuple[str, str]]:
     return compatible_files
 
 
-def vector_search(query_vector: List[float], corpus_embeddings: List[List[float]], top_k):
-    return semantic_search(torch.Tensor(query_vector), torch.Tensor(corpus_embeddings), top_k=top_k)
-
-
 def extract_clean_text(args: Tuple[str, str, bool, int, int]) -> Tuple[str, List[List[str]]]:
     file_path, file_type, cache, min_words, min_word_length = args
     if cache:
@@ -150,13 +125,14 @@ def extract_clean_text(args: Tuple[str, str, bool, int, int]) -> Tuple[str, List
             with Persistor() as db:
                 # Save cleaned text
                 db.add_clean_text_to_file(file_path, json.dumps([" ".join(s) for s in sentences]))
-
+    if not sentences:
+        with Persistor() as db:
+            # Mark as not parseable
+            db.add_clean_text_to_file(file_path, json.dumps([]))
     return str(file_path), sentences
 
 
 def extract_text(file_path_: str, file_type: str) -> str:
-    import textract  # type: ignore
-
     file_path = Path(file_path_)
     # print(f"Parsing: {file_path} as type: {file_type}")
     if file_type == "pdf":
@@ -171,9 +147,6 @@ def extract_text(file_path_: str, file_type: str) -> str:
 
 
 def clean_transform(text: str, min_words: int, min_word_length: int) -> List[List[str]]:
-    import wordninja  # type: ignore
-    from ftfy import fix_text  # type: ignore
-
     text = fix_text(text, normalization="NFKC")
     sentences = [s for s in text.split(".") if s]
 
@@ -201,8 +174,6 @@ def clean_transform(text: str, min_words: int, min_word_length: int) -> List[Lis
 
 
 def get_pdf_text(file_path: Union[Path, str]) -> str:
-    import textract  # type: ignore
-
     try:
         text = str(textract.process(file_path))
     except Exception:
@@ -218,8 +189,6 @@ def get_pdf_text(file_path: Union[Path, str]) -> str:
 
 
 def get_pypdf_text(file_path: Union[Path, str]) -> str:
-    import PyPDF2  # type: ignore
-
     text = ""
     parsed = 0
     failed = 0
@@ -236,13 +205,3 @@ def get_pypdf_text(file_path: Union[Path, str]) -> str:
                 # print("failed to parse page", parsed)
                 failed += 1
     return text
-
-
-def compute_text_embedding(sentences: List[List[str]]) -> List[float]:
-    # Needed for glove model (slows down transformers -> remove when using)
-    sentence_strings = [" ".join(s) for s in sentences]
-    sentence_vectors = model.encode(sentence_strings, show_progress_bar=False)
-    if sentence_vectors.shape[0] > 0:
-        return torch.Tensor(sentence_vectors.mean(axis=0)).tolist()
-    else:
-        return torch.Tensor([sentence_vectors]).tolist()

@@ -1,11 +1,37 @@
 """ Daemon process monitoring changes in HyperTagFS """
 import os
-import time
 import re
 from pathlib import Path
+from typing import List
+import threading
+import torch
+import rpyc
+from rpyc.utils.server import ThreadedServer
 from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from .persistor import Persistor
+from .vectorizer import Vectorizer
+
+cuda = torch.cuda.is_available()
+if cuda:
+    print("Using CUDA to speed stuff up")
+else:
+    print("CUDA not available (this might take a while)")
+vectorizer = Vectorizer()
+
+
+class DaemonService(rpyc.Service):
+    def on_connect(self, conn):
+        print("New connection:", conn)
+
+    def on_disconnect(self, conn):
+        pass
+
+    def exposed_compute_text_embedding(self, sentences: List[List[str]]):
+        return vectorizer.compute_text_embedding(sentences)
+
+    def exposed_search(self, text_query: str, path=False, top_k=10, score=False):
+        return vectorizer.search(text_query, path, top_k, score)
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -81,21 +107,28 @@ class ChangeHandler(FileSystemEventHandler):
         print("Modified", what, ":", event.src_path)
 
 
-def start():
+def watch():
     with Persistor() as db:
         path = db.get_hypertagfs_dir()
-    print("HyperTag daemon watching:", path)
+    print("Watching HyperTagFS:", path)
     event_handler = ChangeHandler()
     observer = Observer()
     observer.schedule(event_handler, path, recursive=True)
     observer.start()
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+
+
+def start():
+    # Spawn HyperTagFS watch in thread
+    t = threading.Thread(target=watch)
+    t.start()
+    # IPC
+    port = 18861
+    # TODO: Investigate why Vectorize seems to be initialized twice...
+    t = ThreadedServer(DaemonService, port=port)
+    print(f"Starting DaemonService, listening on: localhost:{port}")
+    t.start()
 
 
 if __name__ == "__main__":
+    print("Starting as standalone process")
     start()

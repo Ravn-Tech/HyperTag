@@ -1,12 +1,12 @@
 import os
-from multiprocessing import Process
 from shutil import rmtree
 import sqlite3
+import json
+from multiprocessing import Pool
 from pathlib import Path
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 from .persistor import Persistor
-from .daemon import start
 from .graph import graph
 
 
@@ -20,15 +20,89 @@ class HyperTag:
 
     def index(self, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize text files (needed for semantic search) """
-        from .vectorizer import index
+        # TODO: index images
+        # TODO: auto index on file addition (import)
+        from .vectorizer import Vectorizer, extract_clean_text, get_text_documents
 
-        index(rebuild, cache, cores)
+        print("Vectorizing text documents...")
+        remote = True
+        if remote:
+            try:
+                import rpyc
+
+                rpc = rpyc.connect("localhost", 18861)
+                print("Connected to DaemonService successfully")
+            except ConnectionRefusedError:
+                print("DaemonService connection failed, falling back to local execution...")
+                remote = False
+        if cache:
+            print("Caching cleaned texts (database will grow big)")
+        if rebuild:
+            print("Rebuilding index")
+            file_paths = self.db.get_indexed_file_paths()
+        else:
+            file_paths = self.db.get_unindexed_file_paths()
+        i = 0
+        compatible_files = get_text_documents(file_paths)
+        min_words = 5
+        min_word_length = 4
+        args = []
+        for file_path, file_type in compatible_files:
+            args.append((file_path, file_type, cache, min_words, min_word_length))
+        inference_tuples = []
+
+        # Preprocess using multi-processing (default uses all available cores)
+        if cores <= 0:
+            n_cores = os.cpu_count()
+        else:
+            n_cores = cores
+        pool = Pool(processes=n_cores)
+        print(f"Preprocessing texts using {n_cores} cores...")
+        with tqdm(total=len(compatible_files)) as t:
+            for file_path, sentences in pool.imap_unordered(extract_clean_text, args):
+                t.update(1)
+                if sentences:
+                    inference_tuples.append((file_path, sentences))
+        print(f"Cleaned {len(inference_tuples)} text doc/s successfully")
+        print("Starting inference...")
+        # Compute embeddings
+        if not remote:
+            vectorizer = Vectorizer()
+        for file_path, sentences in tqdm(inference_tuples):
+            if remote:
+                document_vector = list(rpc.root.compute_text_embedding(sentences))
+            else:
+                document_vector = vectorizer.compute_text_embedding(sentences)
+            if (
+                document_vector is not None
+                and type(document_vector) is list
+                and len(document_vector) > 0
+            ):
+                self.db.add_file_embedding_vector(file_path, json.dumps(document_vector))
+                self.db.conn.commit()
+                i += 1
+            else:
+                print(type(document_vector))
+                self.db.add_file_embedding_vector(file_path, json.dumps([]))
+                self.db.conn.commit()
+                print("Failed to parse file - skipping:", file_path)
+        print(f"Vectorized {str(i)} file/s successfully")
 
     def search(self, text_query: str, path=False, top_k=10, score=False):
         """ Execute a semantic search that returns best matching text documents """
-        from .vectorizer import search
+        try:
+            import rpyc
 
-        return search(text_query, path, top_k, score)
+            rpc = rpyc.connect("localhost", 18861)
+            for result in rpc.root.search(text_query, path, top_k, score):
+                print(result)
+            if len(result) == 0:
+                print("No relevant files indexed...")
+        except ConnectionRefusedError:
+            from .vectorizer import Vectorizer
+
+            vectorizer = Vectorizer()
+            vectorizer.search(text_query, path, top_k, score)
 
     def set_hypertagfs_dir(self, path: str):
         """ Set path for HyperTagFS directory """
@@ -272,6 +346,11 @@ class HyperTag:
 
 def daemon():
     """ Start daemon process watching HyperTagFS """
+    print("Starting up daemon...")
+    from .daemon import start
+    from multiprocessing import Process, set_start_method
+
+    set_start_method("spawn")
     p = Process(target=start)
     p.start()
     p.join()

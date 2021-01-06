@@ -12,13 +12,13 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
 
-**Semantic Search  (Experimental)**: Search through all your text documents (yes, even PDF's) content indexed by HyperTag. This function is powered by the awesome [Sentence Transformers](https://github.com/UKPLab/sentence-transformers) library.
+**Semantic Search  (Experimental)**: Search through all your text documents (yes, even PDF's) content. This function is powered by the awesome [Sentence Transformers](https://github.com/UKPLab/sentence-transformers) library.
+
+**HyperTag Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation with automatic query result population. Also spawns the DaemonService which speeds up semantic search significantly.
 
 **Fuzzy Matching Queries**: HyperTag uses fuzzy matching to minimize friction in the unlikely case of a typo.
 
 **File Type Groups**: HyperTag automatically creates folders containing common files (e.g. Images: jpg, png, etc., Documents: txt, pdf, etc., Source Code: py, js, etc.), which can be found in ```HyperTagFS```.
-
-**HyperTagFS Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation with automatic query result population.
 
 **HyperTag Graph**: Quickly get an overview of your HyperTag Graph! HyperTag visualizes the metatag graph on every change and saves it at `HyperTagFS/hypertag-graph.pdf`.
 
@@ -75,9 +75,9 @@ Only indexed files can be searched.
 
 ### Semantic search indexed text files
 Print file names sorted by matching score.
-Performance is not great right now but hey it works! (will hopefully improve very soon)
+Performance benefits greatly from the HyperTag daemon running.
 
-```$ hypertag search "your important text query```
+Signal importance of search terms using stars (*):<br>```$ hypertag search "your ***'important text' query"```
 
 ### Print all tags of file/s
 
@@ -113,8 +113,10 @@ Generate file system based representation of your files and tags using symbolic 
 
 ```$ hypertag mount```
 
-### Start HyperTagFS daemon
-Start process watching HyperTagFS dir for user changes
+### Start HyperTag daemon
+Start daemon process with dual function:
+- Watch HyperTagFS directory for user changes
+- Spawn DaemonService to load and expose model used for semantic search
 
 ```$ hypertag daemon```
 

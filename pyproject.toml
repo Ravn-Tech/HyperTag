@@ -29,6 +29,7 @@ wordninja = "^2.0.0"
 ftfy = "^5.8"
 textract = "^1.6.3"
 sentence-transformers = "^0.4.1"
+rpyc = "^5.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
