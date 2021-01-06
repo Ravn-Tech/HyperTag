@@ -1,9 +1,9 @@
 import os
 import sqlite3
-from typing import Union, Optional, Tuple, List
+from typing import List
 from pathlib import Path
 import filetype  # type: ignore
-from fuzzywuzzy import fuzz, process  # type: ignore
+from fuzzywuzzy import process  # type: ignore
 
 
 class Persistor:
@@ -265,7 +265,7 @@ class Persistor:
                 """
                 SELECT path, embedding_vector
                 FROM files
-                WHERE embedding_vector IS NOT NULL AND 
+                WHERE embedding_vector IS NOT NULL AND
                     path = ?
                 """,
                 (str(file_path),),
@@ -491,7 +491,7 @@ class Persistor:
             """
             SELECT tt.parent_tag_id
             FROM tags as t, tags_tags as tt
-            WHERE 
+            WHERE
                 tt.children_tag_id = t.tag_id AND
                 t.name LIKE ?
             """,
@@ -505,7 +505,7 @@ class Persistor:
             """
             SELECT t.name
             FROM tags as t, tags_files as tf, files as f
-            WHERE 
+            WHERE
                 t.tag_id = tf.tag_id AND
                 tf.file_id = f.file_id AND
                 f.name LIKE ?

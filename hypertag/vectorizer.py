@@ -1,7 +1,7 @@
 import os
 import re
 import json
-from typing import Union, Optional, Tuple, List
+from typing import Union, Tuple, List
 from pathlib import Path
 import torch
 from sentence_transformers import SentenceTransformer  # type: ignore
@@ -10,8 +10,8 @@ from .persistor import Persistor
 
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
-model_name = "average_word_embeddings_glove.6B.300d"  # "stsb-distilbert-base" (much slower)
-model = SentenceTransformer(model_name)  # TODO: Optimize by only loading *once* in daemon
+model_name = "average_word_embeddings_glove.6B.300d"  # "stsb-distilbert-base" (slower)
+model = SentenceTransformer(model_name)  # TODO: Optimize only load *once* in daemon
 
 
 def vector_search(query_vector: List[float], corpus_embeddings: List[List[float]], top_k):
@@ -24,7 +24,7 @@ def extract_clean_text(args: Tuple[str, str, bool, int, int]) -> Tuple[str, List
         with Persistor() as db:
             # Use saved cleaned text if available (cache)
             # TODO: Evaluate thoroughly if storing all tokens is worth it
-            # Hunch: Yes it is, cuz we can just store tokens (ids) and a single dictionary mapping (token : word)
+            # Hunch: Yes, cuz we can store text tokens and a single mapping (token : word)
             text = db.get_add_clean_text_of_file(file_path)
             if text:
                 return str(file_path), json.loads(text)
@@ -51,7 +51,7 @@ def extract_text(file_path_: str, file_type: str) -> str:
     else:
         try:
             text = str(textract.process(file_path))
-        except Exception as _ex:
+        except Exception:
             # print("Exception while parsing:", ex)
             text = ""  # Failed to parse...
     return text
@@ -92,7 +92,7 @@ def get_pdf_text(file_path: Union[Path, str]) -> str:
 
     try:
         text = str(textract.process(file_path))
-    except:
+    except Exception:
         try:
             text = get_pypdf_text(file_path)
             if not text:
@@ -119,7 +119,7 @@ def get_pypdf_text(file_path: Union[Path, str]) -> str:
                     return ""
                 parsed += 1
                 text += " " + page.extractText()
-            except:
+            except Exception:
                 # print("failed to parse page", parsed)
                 failed += 1
     return text

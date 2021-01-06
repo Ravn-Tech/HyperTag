@@ -1,4 +1,3 @@
-import time
 import os
 import multiprocessing
 from multiprocessing import Process
@@ -6,7 +5,7 @@ from shutil import rmtree
 import sqlite3
 from pathlib import Path
 import json
-from typing import Union, List, Tuple
+from typing import List, Tuple
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 import filetype  # type: ignore
@@ -44,10 +43,9 @@ class HyperTag:
         """ Vectorize text files (needed for semantic search) """
         # TODO: index images
         # TODO: auto index on file addition (import)
-        print(f"Vectorizing text documents...")
+        print("Vectorizing text documents...")
         from .vectorizer import (
             extract_clean_text,
-            clean_transform,
             compute_text_embedding,
         )
         import torch
@@ -157,12 +155,13 @@ class HyperTag:
             for file_path, file_name in file_paths_names:
                 try:
                     os.symlink(Path(file_path), symlink_path / file_name)
-                except FileExistsError as _ex:
+                except FileExistsError:
                     pass
             self.mount(root_tag_path, tag_id)
 
     def import_tags(self, import_path: str):
-        """ Import files with tags inferred from existing directory hierarchy (ignores hidden directories) """
+        """Import files with tags inferred from existing directory hierarchy
+        (ignores hidden directories)"""
         file_paths = [p for p in list(Path(import_path).rglob("*")) if p.is_file()]
         # Remove files in hidden directories or in ignore list
         ignore_list = set(self.db.get_ignore_list())
@@ -183,7 +182,12 @@ class HyperTag:
                 :-1
             ]
             self.tag(
-                file_path.name, "with", *file_path_tags, remount=False, add=False, commit=False
+                file_path.name,
+                "with",
+                *file_path_tags,
+                remount=False,
+                add=False,
+                commit=False,
             )
             for previous, current in zip(file_path_tags, file_path_tags[1:]):
                 self.metatag(current, "with", previous, remount=False, commit=False)
@@ -199,7 +203,7 @@ class HyperTag:
                 if Path(file_path).is_file():
                     self.db.add_file(os.path.abspath(file_path))
                     added += 1
-            except sqlite3.IntegrityError as _ex:
+            except sqlite3.IntegrityError:
                 pass
         self.db.conn.commit()
         print("Added", added, "new file/s")
@@ -340,7 +344,7 @@ class HyperTag:
                 # Remove tag dir in root level
                 try:
                     rmtree(self.root_dir / tag)
-                except:  # nosec
+                except Exception:  # nosec
                     pass  # Ignore if non existing
         # Remount (everything is mounted)
         if remount:
@@ -373,7 +377,8 @@ def help():
     """ Get some help on how to use HyperTag """
     print(
         """
-    Found a bug or simply feeling lost? Do not despair, you are not alone! Let us know at https://github.com/SeanPedersen/HyperTag/issues
+    Found a bug or simply feeling lost?
+    Do not despair, you're not alone! Let us know at https://github.com/SeanPedersen/HyperTag/issues
     Print available CLI functions: hypertag
     Print available CLI flags for all commands: hypertag command --help
     """

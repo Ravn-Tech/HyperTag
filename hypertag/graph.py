@@ -40,7 +40,7 @@ def graph(layout="fruchterman_reingold"):
     visual_style["margin"] = 50  # type: ignore
     visual_style["vertex_color"] = "yellow"  # type: ignore
     visual_style["layout"] = g.layout(layout)
-    visual_style["vertex_label"] = g.vs["name"]  # pylint: disable=unsubscriptable-object
+    visual_style["vertex_label"] = g.vs["name"]
     plot(g, str(hypertagfs_dir / graph_viz_name), **visual_style)
 
 
