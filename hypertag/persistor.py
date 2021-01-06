@@ -352,7 +352,7 @@ class Persistor:
         )
         self.conn.commit()
 
-    def get_add_clean_text_of_file(self, file_path: str):
+    def get_clean_text_of_file(self, file_path: str):
         self.c.execute(
             """
             SELECT clean_text FROM files WHERE path LIKE ?
