@@ -2,6 +2,8 @@
 
 File organization made easy. HyperTag let's humans intuitively express how they think about their files using tags.
 
+**Objective Function**: Minimize time between a thought and access to all relevant files.
+
 ## Install
 Available on [PyPI](https://pypi.org/project/hypertag/)
 
