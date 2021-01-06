@@ -7,3 +7,4 @@ humans/*
 HyperTagFS/*
 .ipynb_checkpoints/*
 **/__pycache__/**
+migrate.sql
