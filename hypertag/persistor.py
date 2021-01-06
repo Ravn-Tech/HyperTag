@@ -93,10 +93,21 @@ class Persistor:
                 file_id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 path TEXT UNIQUE NOT NULL,
-                embedding_vector TEXT
+                embedding_vector TEXT,
+                clean_text TEXT
             )
             """
         )
+
+        # Migrate old files table
+        try:
+            self.c.execute("ALTER TABLE files ADD COLUMN embedding_vector TEXT")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            self.c.execute("ALTER TABLE files ADD COLUMN clean_text TEXT")
+        except sqlite3.OperationalError:
+            pass
 
         self.c.execute(
             """
@@ -266,7 +277,7 @@ class Persistor:
                     file_embedding_vectors.append((path, embedding_vector))
         return file_embedding_vectors
 
-    def get_indexed_file_paths(self, show_path):
+    def get_indexed_file_paths(self, show_path=True):
         if show_path:
             head = "SELECT path"
         else:
@@ -336,6 +347,29 @@ class Persistor:
             DELETE FROM tags_tags
             WHERE parent_tag_id = ? AND children_tag_id = ?""",
             [parent_tag_id, tag_id],
+        )
+        self.conn.commit()
+
+    def get_add_clean_text_of_file(self, file_path: str):
+        self.c.execute(
+            """
+            SELECT clean_text FROM files WHERE path LIKE ?
+            """,
+            (file_path,),
+        )
+        data = self.c.fetchone()[0]
+        return data
+
+    def add_clean_text_to_file(self, file_path: str, clean_text: str):
+        self.c.execute(
+            """
+            UPDATE files
+            SET
+                clean_text = ?
+            WHERE
+                path = ?
+            """,
+            [clean_text, file_path],
         )
         self.conn.commit()
 

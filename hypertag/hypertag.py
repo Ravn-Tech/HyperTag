@@ -5,7 +5,6 @@ from multiprocessing import Process
 from shutil import rmtree
 import sqlite3
 from pathlib import Path
-import torch
 import json
 from typing import Union, List, Tuple
 import fire  # type: ignore
@@ -41,8 +40,8 @@ class HyperTag:
                 compatible_files.append((str(file_path), file_type))
         return compatible_files
 
-    def index(self):
-        """ Vectorize text files  """
+    def index(self, rebuild=False, cache=False):
+        """ Vectorize text files (needed for semantic search) """
         # TODO: index images
         # TODO: auto index on file addition (import)
         print(f"Vectorizing text documents...")
@@ -50,20 +49,23 @@ class HyperTag:
             extract_clean_text,
             clean_transform,
             compute_text_embedding,
-            vector_search,
         )
+        import torch
 
         cuda = torch.cuda.is_available()
         if cuda:
             print("Using CUDA to speed stuff up")
-        file_paths = self.db.get_unindexed_file_paths()
+        if rebuild:
+            file_paths = self.db.get_indexed_file_paths()
+        else:
+            file_paths = self.db.get_unindexed_file_paths()
         i = 0
         compatible_files = self.get_text_documents(file_paths)
         min_words = 5
         min_word_length = 4
         args = []
         for file_path, file_type in compatible_files:
-            args.append((file_path, file_type, min_words, min_word_length))
+            args.append((file_path, file_type, cache, min_words, min_word_length))
         inference_tuples = []
 
         # Preprocess using multi-processing
@@ -81,10 +83,10 @@ class HyperTag:
             document_vector = compute_text_embedding(sentences)
             if (
                 document_vector is not None
-                and type(document_vector) is torch.Tensor
-                and document_vector.shape[0] == 768
+                and type(document_vector) is list
+                and len(document_vector) > 0
             ):
-                self.db.add_file_embedding_vector(file_path, json.dumps(document_vector.tolist()))
+                self.db.add_file_embedding_vector(file_path, json.dumps(document_vector))
                 self.db.conn.commit()
                 i += 1
             else:
@@ -95,7 +97,6 @@ class HyperTag:
     def search(self, text_query: str, path=False, top_k=10, score=False):
         """ Execute a semantic search that returns best matching text documents """
         from .vectorizer import (
-            extract_clean_text,
             clean_transform,
             compute_text_embedding,
             vector_search,
@@ -107,7 +108,7 @@ class HyperTag:
         if len(corpus) == 0:
             print("No relevant files indexed...")
             return
-        sentence_query = clean_transform(text_query, 1, 1)
+        sentence_query = clean_transform(text_query, 0, 1)
         query_vector = compute_text_embedding(sentence_query)
         corpus_paths = []
         corpus_vectors = []
@@ -115,8 +116,7 @@ class HyperTag:
             corpus_vectors.append(json.loads(embedding_vector))
             corpus_paths.append(doc_path)
 
-        corpus_tensor = torch.Tensor(corpus_vectors)
-        top_matches = vector_search(query_vector, corpus_tensor, top_k=top_k)
+        top_matches = vector_search(query_vector, corpus_vectors, top_k=top_k)
         for match in top_matches[0]:
             corpus_id, score_value = match["corpus_id"], match["score"]
             file_path = corpus_paths[corpus_id]
@@ -162,7 +162,7 @@ class HyperTag:
             self.mount(root_tag_path, tag_id)
 
     def import_tags(self, import_path: str):
-        """ Imports files with tags from existing directory hierarchy (ignores hidden directories) """
+        """ Import files with tags inferred from existing directory hierarchy (ignores hidden directories) """
         file_paths = [p for p in list(Path(import_path).rglob("*")) if p.is_file()]
         # Remove files in hidden directories or in ignore list
         ignore_list = set(self.db.get_ignore_list())
@@ -213,7 +213,7 @@ class HyperTag:
             print(tag)
 
     def show(self, mode="tags", path=False):
-        """ Display all tags (default) or files """
+        """ Display all tags (default), indexed files (mode=index) or files """
         if mode == "files":
             names = self.db.get_files(path)
         elif mode == "index":
@@ -226,9 +226,9 @@ class HyperTag:
     def query(self, *query, path=False, fuzzy=True):
         """Query files using set operands.
         Supported operands:
-          - and : intersection (default)
-          - or : union
-          - minus : difference
+        and (intersection (default))
+        or (union)
+        minus (difference)
         """
         # TODO: Parse AST to support queries with brackets
         operands = {"and", "or", "minus"}
@@ -363,7 +363,7 @@ class HyperTag:
 
 
 def daemon():
-    """ Starts HyperTag daemon process """
+    """ Start daemon process watching HyperTagFS """
     p = Process(target=start)
     p.start()
     p.join()

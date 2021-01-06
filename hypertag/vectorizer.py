@@ -1,35 +1,49 @@
 import os
 import re
+import json
 from typing import Union, Optional, Tuple, List
 from pathlib import Path
 import torch
-import PyPDF2  # type: ignore
-import textract  # type: ignore
-import wordninja  # type: ignore
-from ftfy import fix_text  # type: ignore
 from sentence_transformers import SentenceTransformer  # type: ignore
 from sentence_transformers.util import semantic_search  # type: ignore
+from .persistor import Persistor
 
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
-model_name = "stsb-distilbert-base"
+model_name = "average_word_embeddings_glove.6B.300d"  # "stsb-distilbert-base" (much slower)
 model = SentenceTransformer(model_name)  # TODO: Optimize by only loading *once* in daemon
 
 
-def vector_search(query_vector, corpus_embeddings, top_k):
-    return semantic_search(query_vector, corpus_embeddings, top_k=top_k)
+def vector_search(query_vector: List[float], corpus_embeddings: List[List[float]], top_k):
+    return semantic_search(torch.Tensor(query_vector), torch.Tensor(corpus_embeddings), top_k=top_k)
 
 
-def extract_clean_text(args: Tuple[str, str, int, int]) -> Tuple[str, List[List[str]]]:
-    file_path, file_type, min_words, min_word_length = args
+def extract_clean_text(args: Tuple[str, str, bool, int, int]) -> Tuple[str, List[List[str]]]:
+    file_path, file_type, cache, min_words, min_word_length = args
+    if cache:
+        with Persistor() as db:
+            # Use saved cleaned text if available (cache)
+            # TODO: Evaluate thoroughly if storing all tokens is worth it
+            # Hunch: Yes it is, cuz we can just store tokens (ids) and a single dictionary mapping (token : word)
+            text = db.get_add_clean_text_of_file(file_path)
+            if text:
+                return str(file_path), json.loads(text)
+
     text = extract_text(file_path, file_type)
     sentences = []
     if text:
         sentences = clean_transform(text, min_words, min_word_length)
+        if cache:
+            with Persistor() as db:
+                # Save cleaned text
+                db.add_clean_text_to_file(file_path, json.dumps([" ".join(s) for s in sentences]))
+
     return str(file_path), sentences
 
 
 def extract_text(file_path_: str, file_type: str) -> str:
+    import textract  # type: ignore
+
     file_path = Path(file_path_)
     # print(f"Parsing: {file_path} as type: {file_type}")
     if file_type == "pdf":
@@ -44,6 +58,9 @@ def extract_text(file_path_: str, file_type: str) -> str:
 
 
 def clean_transform(text: str, min_words: int, min_word_length: int) -> List[List[str]]:
+    import wordninja  # type: ignore
+    from ftfy import fix_text  # type: ignore
+
     text = fix_text(text, normalization="NFKC")
     sentences = [s for s in text.split(".") if s]
 
@@ -71,6 +88,8 @@ def clean_transform(text: str, min_words: int, min_word_length: int) -> List[Lis
 
 
 def get_pdf_text(file_path: Union[Path, str]) -> str:
+    import textract  # type: ignore
+
     try:
         text = str(textract.process(file_path))
     except:
@@ -86,6 +105,8 @@ def get_pdf_text(file_path: Union[Path, str]) -> str:
 
 
 def get_pypdf_text(file_path: Union[Path, str]) -> str:
+    import PyPDF2  # type: ignore
+
     text = ""
     parsed = 0
     failed = 0
@@ -93,8 +114,8 @@ def get_pypdf_text(file_path: Union[Path, str]) -> str:
         reader = PyPDF2.PdfFileReader(f)
         for page in reader.pages:
             try:
-                if failed > 50:
-                    print("Stopping to parse after 50 failed pages...")
+                if failed > 42:
+                    print("Stopping to parse after 42 failed pages...")
                     return ""
                 parsed += 1
                 text += " " + page.extractText()
@@ -104,9 +125,11 @@ def get_pypdf_text(file_path: Union[Path, str]) -> str:
     return text
 
 
-def compute_text_embedding(sentences: List[List[str]]) -> Union[None, torch.Tensor]:
-    sentence_vectors = model.encode(sentences, show_progress_bar=False)
+def compute_text_embedding(sentences: List[List[str]]) -> List[float]:
+    # Needed for glove model (slows down transformers -> remove when using)
+    sentence_strings = [" ".join(s) for s in sentences]
+    sentence_vectors = model.encode(sentence_strings, show_progress_bar=False)
     if sentence_vectors.shape[0] > 0:
-        return torch.Tensor(sentence_vectors.mean(axis=0))
+        return torch.Tensor(sentence_vectors.mean(axis=0)).tolist()
     else:
-        return torch.Tensor([sentence_vectors])
+        return torch.Tensor([sentence_vectors]).tolist()
