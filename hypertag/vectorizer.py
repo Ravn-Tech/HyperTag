@@ -193,7 +193,7 @@ def get_pypdf_text(file_path: Union[Path, str]) -> str:
     parsed = 0
     failed = 0
     with open(str(file_path), mode="rb") as f:
-        reader = PyPDF2.PdfFileReader(f)
+        reader = PyPDF2.PdfFileReader(f, strict=False)
         for page in reader.pages:
             try:
                 if failed > 42:
