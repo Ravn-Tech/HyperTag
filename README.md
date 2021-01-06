@@ -73,6 +73,8 @@ MINUS (difference): <br>
 ### Index available text files
 Only indexed files can be searched.
 
+To parse even unparseable PDF's, install tesseract: `# pacman -S tesseract tesseract-data-eng`
+
 ```$ hypertag index```
 
 ### Semantic search indexed text files
