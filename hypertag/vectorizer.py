@@ -18,6 +18,7 @@ class Vectorizer:
     def __init__(self):
         os.environ["TOKENIZERS_PARALLELISM"] = "true"
         model_name = "average_word_embeddings_glove.6B.300d"  # "stsb-distilbert-base" (slower)
+        print("Loading", model_name)
         self.model = SentenceTransformer(model_name)
 
     def compute_text_embedding(self, sentences: List[List[str]]) -> List[float]:
