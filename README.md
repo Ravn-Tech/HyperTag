@@ -125,6 +125,7 @@ Default is the user's home directory
 
 ## Architecture
 - Python powers HyperTag
+- Many other awesome open-source projects make HyperTag possible (listed in `pyproject.toml`)
 - SQLite3 serves as the meta data storage engine (located at `~/.config/hypertag/hypertag.db`)
 - Symbolic links are used to create the HyperTagFS directory structure
 
