@@ -31,6 +31,7 @@ class HyperTag:
                 import rpyc
 
                 rpc = rpyc.connect("localhost", 18861)
+                rpc._config["sync_request_timeout"] = None  # Disable timeout
                 print("Connected to DaemonService successfully")
             except ConnectionRefusedError:
                 print("DaemonService connection failed, falling back to local execution...")
