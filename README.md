@@ -12,6 +12,8 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
 
+**Semantic Search  (Experimental)**: Search through all your text documents (yes, even PDF's) content indexed by HyperTag. This function is powered by the awesome [Sentence Transformers](https://github.com/UKPLab/sentence-transformers) library.
+
 **Fuzzy Matching Queries**: HyperTag uses fuzzy matching to minimize friction in the unlikely case of a typo.
 
 **File Type Groups**: HyperTag automatically creates folders containing common files (e.g. Images: jpg, png, etc., Documents: txt, pdf, etc., Source Code: py, js, etc.), which can be found in ```HyperTagFS```.
@@ -65,6 +67,17 @@ OR (union): <br>
 
 MINUS (difference): <br>
 ```$ hypertag query human minus "Homo Sapiens"```
+
+### Index available text files
+Only indexed files can be searched.
+
+```$ hypertag index```
+
+### Semantic search indexed text files
+Print file names sorted by matching score.
+Performance is not great right now but hey it works! (will hopefully improve very soon)
+
+```$ hypertag search "your important text query```
 
 ### Print all tags of file/s
 
