@@ -1,6 +1,5 @@
 import os
-import multiprocessing
-from multiprocessing import Process
+from multiprocessing import Process, Pool
 from shutil import rmtree
 import sqlite3
 from pathlib import Path
@@ -39,7 +38,7 @@ class HyperTag:
                 compatible_files.append((str(file_path), file_type))
         return compatible_files
 
-    def index(self, rebuild=False, cache=False):
+    def index(self, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize text files (needed for semantic search) """
         # TODO: index images
         # TODO: auto index on file addition (import)
@@ -53,7 +52,12 @@ class HyperTag:
         cuda = torch.cuda.is_available()
         if cuda:
             print("Using CUDA to speed stuff up")
+        else:
+            print("CUDA not available (this might take a while)")
+        if cache:
+            print("Caching cleaned texts (database will grow big)")
         if rebuild:
+            print("Rebuilding index")
             file_paths = self.db.get_indexed_file_paths()
         else:
             file_paths = self.db.get_unindexed_file_paths()
@@ -66,15 +70,19 @@ class HyperTag:
             args.append((file_path, file_type, cache, min_words, min_word_length))
         inference_tuples = []
 
-        # Preprocess using multi-processing
-        pool = multiprocessing.Pool(processes=8)
-        print("Preprocessing...")
+        # Preprocess using multi-processing (default uses all available cores)
+        if cores <= 0:
+            n_cores = os.cpu_count()
+        else:
+            n_cores = cores
+        pool = Pool(processes=n_cores)
+        print(f"Preprocessing texts using {n_cores} cores...")
         with tqdm(total=len(compatible_files)) as t:
             for file_path, sentences in pool.imap_unordered(extract_clean_text, args):
                 t.update(1)
                 if sentences:
                     inference_tuples.append((file_path, sentences))
-        print(f"Cleaned {len(inference_tuples)} text docs successfully!")
+        print(f"Cleaned {len(inference_tuples)} text docs successfully")
         print("Starting inference...")
         # Compute embeddings
         for file_path, sentences in tqdm(inference_tuples):
@@ -90,7 +98,7 @@ class HyperTag:
             else:
                 print(type(document_vector))
                 print("Failed to parse file - skipping:", file_path)
-        print(f"Vectorized {str(i)} file/s.")
+        print(f"Vectorized {str(i)} file/s successfully")
 
     def search(self, text_query: str, path=False, top_k=10, score=False):
         """ Execute a semantic search that returns best matching text documents """
