@@ -129,8 +129,9 @@ Default is the user's home directory
 - Run HyperTag: ```$ python -m hypertag```
 
 ## Inspiration
-This project is inspired by other existing open-source projects:
+
+**What is the point of HyperTag's existence?** HyperTag offers many unique features such as the import, semantic search, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying tiny at <1000 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
+
+This project is partially inspired by these open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go
 - [SuperTag](https://github.com/amoffat/supertag): Written in Rust
-
-**What is the point of HyperTag's existence?** HyperTag offers many unique features such as the import, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying extremely small at <700 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
