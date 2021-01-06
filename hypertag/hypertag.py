@@ -369,9 +369,20 @@ def daemon():
     p.join()
 
 
+def help():
+    """ Get some help on how to use HyperTag """
+    print(
+        """
+    Found a bug or simply feeling lost? Do not despair, you are not alone! Let us know at https://github.com/SeanPedersen/HyperTag/issues
+    Print available CLI flags for all commands: hypertag command --help
+    """
+    )
+
+
 def main():
     ht = HyperTag()
     fire_cli = {
+        "help": help,
         "add": ht.add,
         "import": ht.import_tags,
         "tag": ht.tag,
