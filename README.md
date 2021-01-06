@@ -143,7 +143,8 @@ Default is the user's home directory
 
 ## Inspiration
 
-**What is the point of HyperTag's existence?** HyperTag offers many unique features such as the import, semantic search, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying tiny at <1000 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
+**What is the point of HyperTag's existence?**<br/>
+HyperTag offers many unique features such as the import, semantic search, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying tiny at <1000 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
 
 This project is partially inspired by these open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go
