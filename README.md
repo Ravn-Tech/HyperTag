@@ -9,6 +9,9 @@ Available on [PyPI](https://pypi.org/project/hypertag/)
 
 `$ pip install hypertag`
 
+## Community
+Join the HyperTag development [matrix chat room](https://matrix.to/#/#hypertag:matrix.neotree.uber.space?via=matrix.neotree.uber.space) to stay up to date on the latest developments and chat with others about HyperTag.
+
 ## Overview
 HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
 
@@ -25,7 +28,6 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 **HyperTag Graph**: Quickly get an overview of your HyperTag Graph! HyperTag visualizes the metatag graph on every change and saves it at `HyperTagFS/hypertag-graph.pdf`.
 
 ![HyperTag Graph Example](https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.jpg)
-
 
 ## CLI Functions
 
