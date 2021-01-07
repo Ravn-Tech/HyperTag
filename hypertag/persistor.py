@@ -317,8 +317,11 @@ class Persistor:
         )
 
     def remove_tag_from_file(self, tag_name: str, file_name: str):
-        file_id = self.get_file_id_by_name(file_name)
-        tag_id = self.get_tag_id_by_name(tag_name)
+        try:
+            file_id = self.get_file_id_by_name(file_name)
+            tag_id = self.get_tag_id_by_name(tag_name)
+        except TypeError:
+            return
         self.c.execute("DELETE FROM tags_files WHERE file_id = ? AND tag_id = ?", [file_id, tag_id])
         self.conn.commit()
 
