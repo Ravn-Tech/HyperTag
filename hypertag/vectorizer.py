@@ -3,7 +3,7 @@ import re
 import json
 from typing import Union, Tuple, List
 from pathlib import Path
-import filetype
+import filetype  # type: ignore
 import torch
 from sentence_transformers import SentenceTransformer  # type: ignore
 from sentence_transformers.util import semantic_search  # type: ignore

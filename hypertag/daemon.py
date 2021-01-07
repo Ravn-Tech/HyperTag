@@ -5,8 +5,8 @@ from pathlib import Path
 import json
 import threading
 import torch
-import rpyc
-from rpyc.utils.server import ThreadedServer
+import rpyc  # type: ignore
+from rpyc.utils.server import ThreadedServer  # type: ignore
 from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from .persistor import Persistor

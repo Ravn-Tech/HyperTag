@@ -1,5 +1,5 @@
 import os
-import rpyc
+import rpyc  # type: ignore
 from shutil import rmtree
 import sqlite3
 import json
