@@ -134,6 +134,7 @@ Default is the user's home directory
 - Many other awesome open-source projects make HyperTag possible (listed in `pyproject.toml`)
 - SQLite3 serves as the meta data storage engine (located at `~/.config/hypertag/hypertag.db`)
 - Symbolic links are used to create the HyperTagFS directory structure
+- Semantic text document search is powered by the awesome [DistilBERT](https://arxiv.org/abs/1910.01108)
 
 ## Development
 - Clone repo: ```$ git clone https://github.com/SeanPedersen/HyperTag.git```
