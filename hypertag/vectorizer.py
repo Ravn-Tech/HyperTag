@@ -17,13 +17,17 @@ from .persistor import Persistor
 class Vectorizer:
     def __init__(self):
         os.environ["TOKENIZERS_PARALLELISM"] = "true"
-        model_name = "stsb-distilbert-base"  # "average_word_embeddings_glove.6B.300d"
-        print("Loading", model_name)
-        self.model = SentenceTransformer(model_name)
+        self.model_name = "stsb-distilbert-base"  # "average_word_embeddings_glove.6B.300d"
+        self.model = SentenceTransformer(self.model_name)
 
     def compute_text_embedding(self, sentences: List[List[str]]) -> List[float]:
-        # Needed for glove model (slows down transformers -> remove when using)
-        sentence_strings = [" ".join(s) for s in sentences]
+        if self.model_name == "stsb-distilbert-base":
+            for i, s in enumerate(sentences):
+                if len(s) == 1:
+                    sentences[i] = 2 * sentences[i]  # Needed for transformer model
+            sentence_strings = sentences
+        else:
+            sentence_strings = [" ".join(s) for s in sentences]  # For glove (slows transformers)
         sentence_vectors = self.model.encode(sentence_strings, show_progress_bar=False)
         if sentence_vectors.shape[0] > 0:
             return torch.Tensor(sentence_vectors.mean(axis=0)).tolist()
@@ -50,7 +54,6 @@ class Vectorizer:
                     parsed_query.append(w[replicate_n:])
             else:
                 parsed_query.append(w)
-
         parsed_text_query = " ".join(parsed_query)
 
         with Persistor() as db:
@@ -113,10 +116,11 @@ def extract_clean_text(args: Tuple[str, str, bool, int, int]) -> Tuple[str, List
         with Persistor() as db:
             # Use saved cleaned text if available (cache)
             # TODO: Evaluate thoroughly if storing all tokens is worth it
-            # Hunch: Yes, cuz we can store text tokens and a single mapping (token : word)
-            text = db.get_add_clean_text_of_file(file_path)
-            if text:
-                return str(file_path), json.loads(text)
+            # Hunch: Yes, we can store text tokens and a single mapping (token : word)
+            sentences_string = db.get_clean_text_of_file(file_path)
+            if sentences_string is not None:
+                sentences = [s.split(" ") for s in json.loads(sentences_string)]
+                return str(file_path), sentences
 
     text = extract_text(file_path, file_type)
     sentences = []
@@ -126,9 +130,10 @@ def extract_clean_text(args: Tuple[str, str, bool, int, int]) -> Tuple[str, List
             with Persistor() as db:
                 # Save cleaned text
                 db.add_clean_text_to_file(file_path, json.dumps([" ".join(s) for s in sentences]))
-    if not sentences:
+    else:
         with Persistor() as db:
             # Mark as not parseable
+            print("NOT PARSEABLE")
             db.add_clean_text_to_file(file_path, json.dumps([]))
     return str(file_path), sentences
 
@@ -149,24 +154,22 @@ def extract_text(file_path_: str, file_type: str) -> str:
 
 def clean_transform(text: str, min_words: int, min_word_length: int) -> List[List[str]]:
     text = fix_text(text, normalization="NFKC")
+    text = text.replace("\n", " ").replace("\t", " ")
+    text = re.sub("[^A-Za-z0-9 .']+", "", text)  # Remove all special chars but space . '
     sentences = [s for s in text.split(".") if s]
-
-    nss = []
-    for s in sentences:
-        if len(s.split(" ")) < 3 and len(s) > 42:
-            # Break apart long non-space seperated sequences by . and \n
-            subs = []
-            for ss in re.split(r"\. |\n", s):
-                subs.append(ss)
-            nss.append(" ".join(subs))
-        else:
-            nss.append(s)
-
-    sentences = nss
 
     ninja_sentences = []
     for s in sentences:
-        ninja_sentences.append([w for w in wordninja.split(s) if len(w) > min_word_length])
+        ninja_sentence = []
+        for w in s.split(" "):
+            if len(w) > 5:
+                for nw in wordninja.split(w):  # Split non space seperated word groups up
+                    if len(nw) > min_word_length:
+                        ninja_sentence.append(nw)
+            else:
+                if len(w) > min_word_length:
+                    ninja_sentence.append(w)
+        ninja_sentences.append(ninja_sentence)
     # Remove duplicates
     ninja_sentence_set = {" ".join(s) for s in ninja_sentences}
 
@@ -175,17 +178,21 @@ def clean_transform(text: str, min_words: int, min_word_length: int) -> List[Lis
 
 
 def get_pdf_text(file_path: Union[Path, str]) -> str:
+    text = ""
     try:
-        text = str(textract.process(file_path))
+        text = textract.process(file_path, encoding="utf8").decode("utf-8")
     except Exception:
         try:
             text = get_pypdf_text(file_path)
-            if not text:
-                # print("Falling back to Tesseract parsing...")
-                text = str(textract.process(file_path, method="tesseract"))
         except Exception as ex:
             print("Exception while parsing:", ex)
-            return ""  # Failed to parse...
+    if not text:
+        print("Falling back to Tesseract OCR parsing (get a tea...) for:", file_path)
+        try:
+            text = textract.process(file_path, method="tesseract").decode("utf-8")
+        except Exception as ex:
+            print("OCR failed:", ex)
+            text = ""
     return text
 
 

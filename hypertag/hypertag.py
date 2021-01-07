@@ -1,4 +1,5 @@
 import os
+import rpyc
 from shutil import rmtree
 import sqlite3
 import json
@@ -28,8 +29,6 @@ class HyperTag:
         remote = True
         if remote:
             try:
-                import rpyc
-
                 rpc = rpyc.connect("localhost", 18861)
                 rpc._config["sync_request_timeout"] = None  # Disable timeout
                 print("Connected to DaemonService successfully")
@@ -71,7 +70,7 @@ class HyperTag:
             vectorizer = Vectorizer()
         for file_path, sentences in tqdm(inference_tuples):
             if remote:
-                document_vector = list(rpc.root.compute_text_embedding(sentences))
+                document_vector = list(rpc.root.compute_text_embedding(json.dumps(sentences)))
             else:
                 document_vector = vectorizer.compute_text_embedding(sentences)
             if (
@@ -89,11 +88,10 @@ class HyperTag:
                 print("Failed to parse file - skipping:", file_path)
         print(f"Vectorized {str(i)} file/s successfully")
 
-    def search(self, text_query: str, path=False, top_k=10, score=False):
+    def search(self, *text_queries: str, path=False, top_k=10, score=False):
         """ Execute a semantic search that returns best matching text documents """
+        text_query = " . ".join(text_queries)
         try:
-            import rpyc
-
             rpc = rpyc.connect("localhost", 18861)
             for result in rpc.root.search(text_query, path, top_k, score):
                 print(result)

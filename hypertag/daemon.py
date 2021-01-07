@@ -2,7 +2,7 @@
 import os
 import re
 from pathlib import Path
-from typing import List
+import json
 import threading
 import torch
 import rpyc
@@ -27,7 +27,8 @@ class DaemonService(rpyc.Service):
     def on_disconnect(self, conn):
         pass
 
-    def exposed_compute_text_embedding(self, sentences: List[List[str]]):
+    def exposed_compute_text_embedding(self, sentences_json):
+        sentences = json.loads(sentences_json)
         return vectorizer.compute_text_embedding(sentences)
 
     def exposed_search(self, text_query: str, path=False, top_k=10, score=False):

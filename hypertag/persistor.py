@@ -288,7 +288,7 @@ class Persistor:
 
     def get_unindexed_file_paths(self) -> List[str]:
         self.c.execute(
-            "SELECT path FROM files WHERE embedding_vector is NULL OR clean_text is NULL"
+            "SELECT path FROM files WHERE embedding_vector is NULL AND clean_text is NULL"
         )
         data = [str(e[0]) for e in self.c.fetchall()]
         return data
