@@ -79,9 +79,9 @@ To parse even unparseable PDF's, install tesseract: `# pacman -S tesseract tesse
 
 ### Semantic search indexed text files
 Print file names sorted by matching score.
-Performance benefits greatly from the HyperTag daemon running.
+Performance benefits greatly from running the HyperTag daemon.
 
-Signal importance of search terms using stars (*):<br>```$ hypertag search "your ***'important text' query"```
+```$ hypertag search "your important text query"```
 
 ### Print all tags of file/s
 
