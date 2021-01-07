@@ -84,13 +84,13 @@ Index only text files: ```$ hypertag index --text```
 
 ### Semantic search for text files
 Print text file names sorted by matching score.
-Performance benefits greatly from running the HyperTag daemon. Options: --path=0, --score=0, top_k=10
+Performance benefits greatly from running the HyperTag daemon. Options: --path=0, --score=0, --top_k=10
 
 ```$ hypertag search "your important text query"```
 
 ### Semantic search for image files
 Print image file names sorted by matching score.
-Performance benefits greatly from running the HyperTag daemon. Options: --path=0, --score=0, top_k=10
+Performance benefits greatly from running the HyperTag daemon. Options: --path=0, --score=0, --top_k=10
 
 ```$ hypertag search_image "your image content description"```
 
