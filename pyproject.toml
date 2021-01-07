@@ -7,7 +7,7 @@ authors = ["Sean <sean-p-96@hotmail.de>"]
 license = "MIT"
 homepage = "https://github.com/SeanPedersen/HyperTag"
 repository = "https://github.com/SeanPedersen/HyperTag"
-keywords = ["tag", "tagging", "file-system", "file", "organization"]
+keywords = ["tag", "tagging", "file-system", "file", "organization", "search", "semantic", "text", "pdf"]
 classifiers = [
     "Environment :: Console"
 ]
