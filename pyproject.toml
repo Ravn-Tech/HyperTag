@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "hypertag"
-version = "0.4.3.1"
+version = "0.5.0"
 description = "File organization made easy using tags"
 readme = "README.md"
 authors = ["Sean <sean-p-96@hotmail.de>"]
 license = "MIT"
 homepage = "https://github.com/SeanPedersen/HyperTag"
 repository = "https://github.com/SeanPedersen/HyperTag"
-keywords = ["tag", "tagging", "file-system", "file", "organization", "search", "semantic", "text", "pdf"]
+keywords = ["tag", "tagging", "file-system", "file", "organization", "search", "semantic", "text", "image", "pdf"]
 classifiers = [
     "Environment :: Console"
 ]
@@ -16,7 +16,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = "^3.6.2"
 fire = "^0.3.1"
 tqdm = "^4.55.0"
 filetype = "^1.0.7"
@@ -30,6 +30,8 @@ ftfy = "^5.8"
 textract = "^1.6.3"
 sentence-transformers = "^0.4.1"
 rpyc = "^5.0.0"
+torchvision = "^0.8.2"
+Pillow = "^8.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

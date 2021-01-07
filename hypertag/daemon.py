@@ -10,14 +10,10 @@ from rpyc.utils.server import ThreadedServer  # type: ignore
 from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from .persistor import Persistor
-from .vectorizer import Vectorizer
+from .vectorizer import TextVectorizer, ImageVectorizer
 
-cuda = torch.cuda.is_available()
-if cuda:
-    print("Using CUDA to speed stuff up")
-else:
-    print("CUDA not available (this might take a while)")
-vectorizer = Vectorizer()
+text_vectorizer = None
+image_vectorizer = None
 
 
 class DaemonService(rpyc.Service):
@@ -28,11 +24,21 @@ class DaemonService(rpyc.Service):
         pass
 
     def exposed_compute_text_embedding(self, sentences_json):
-        sentences = json.loads(sentences_json)
-        return vectorizer.compute_text_embedding(sentences)
+        if text_vectorizer is not None:
+            sentences = json.loads(sentences_json)
+            return json.dumps(text_vectorizer.compute_text_embedding(sentences))
 
     def exposed_search(self, text_query: str, path=False, top_k=10, score=False):
-        return vectorizer.search(text_query, path, top_k, score)
+        if text_vectorizer is not None:
+            return text_vectorizer.search(text_query, path, top_k, score)
+
+    def exposed_encode_image(self, path: str):
+        if image_vectorizer is not None:
+            return json.dumps(image_vectorizer.encode_image(path).tolist())
+
+    def exposed_search_image(self, text_query: str, path=False, top_k=10, score=False):
+        if image_vectorizer is not None:
+            return image_vectorizer.search(text_query, path, top_k, score)
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -124,6 +130,19 @@ def start():
     # Spawn HyperTagFS watch in thread
     t = threading.Thread(target=watch)
     t.start()
+
+    cuda = torch.cuda.is_available()
+    if cuda:
+        print("Using CUDA runtime")
+    else:
+        print("CUDA runtime not available (this might take a while)")
+    print("Initializing TextVectorizer...")
+    global text_vectorizer
+    text_vectorizer = TextVectorizer()
+    print("Initializing ImageVectorizer...")
+    global image_vectorizer
+    image_vectorizer = ImageVectorizer()
+
     # IPC
     port = 18861
     # TODO: Investigate why Vectorize seems to be initialized twice...

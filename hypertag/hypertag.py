@@ -19,11 +19,63 @@ class HyperTag:
         self.root_dir = Path(self.db.get_hypertagfs_dir())
         os.makedirs(self.root_dir, exist_ok=True)
 
-    def index(self, rebuild=False, cache=False, cores: int = 0):
+    def search_image(self, *text_queries: str, top_k=10, path=False, score=False):
+        """ Execute a semantic search that returns best matching images """
+        # TODO: Add option to search with image as input for similar ones
+        text_query = " ".join(text_queries)
+        try:
+            rpc = rpyc.connect("localhost", 18861)
+            for result in rpc.root.search_image(text_query, path, top_k, score):
+                print(result)
+            if len(result) == 0:
+                print("No relevant files indexed...")
+        except ConnectionRefusedError:
+            from .vectorizer import ImageVectorizer
+
+            vectorizer = ImageVectorizer()
+            vectorizer.search(text_query, path, top_k, score)
+
+    def index(self, text=True, image=True, rebuild=False, cache=False, cores: int = 0):
+        """ Vectorize image & text files (needed for semantic search) """
+        if image:
+            self.index_images()
+        if text:
+            self.index_texts(rebuild, cache, cores)
+
+    def index_images(self):
+        """ Vectorize image files (needed for semantic search) """
+        from .vectorizer import ImageVectorizer, get_image_files
+
+        file_paths = self.db.get_unindexed_file_paths()
+        compatible_files = get_image_files(file_paths, verbose=True)
+        print("Vectorizing", len(compatible_files), "images...")
+        remote = True
+        if remote:
+            try:
+                rpc = rpyc.connect("localhost", 18861)
+                rpc._config["sync_request_timeout"] = None  # Disable timeout
+                print("Connected to DaemonService successfully")
+            except ConnectionRefusedError:
+                print("DaemonService connection failed, falling back to local execution...")
+                remote = False
+
+        if not remote:
+            img_vectorizer = ImageVectorizer()
+
+        for file_path in tqdm(compatible_files):
+            if remote:
+                img_vector = json.loads(rpc.root.encode_image(file_path))[0]
+            else:
+                img_vector = img_vectorizer.encode_image(file_path)[0].tolist()
+
+            self.db.add_file_embedding_vector(file_path, json.dumps(img_vector))
+            self.db.conn.commit()
+
+    def index_texts(self, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize text files (needed for semantic search) """
         # TODO: index images
         # TODO: auto index on file addition (import)
-        from .vectorizer import Vectorizer, extract_clean_text, get_text_documents
+        from .vectorizer import TextVectorizer, extract_clean_text, get_text_documents
 
         print("Vectorizing text documents...")
         remote = True
@@ -43,7 +95,7 @@ class HyperTag:
         else:
             file_paths = self.db.get_unindexed_file_paths()
         i = 0
-        compatible_files = get_text_documents(file_paths)
+        compatible_files = get_text_documents(file_paths, verbose=True)
         min_words = 5
         min_word_length = 4
         args = []
@@ -67,10 +119,10 @@ class HyperTag:
         print("Starting inference...")
         # Compute embeddings
         if not remote:
-            vectorizer = Vectorizer()
+            vectorizer = TextVectorizer()
         for file_path, sentences in tqdm(inference_tuples):
             if remote:
-                document_vector = list(rpc.root.compute_text_embedding(json.dumps(sentences)))
+                document_vector = json.loads(rpc.root.compute_text_embedding(json.dumps(sentences)))
             else:
                 document_vector = vectorizer.compute_text_embedding(sentences)
             if (
@@ -98,9 +150,9 @@ class HyperTag:
             if len(result) == 0:
                 print("No relevant files indexed...")
         except ConnectionRefusedError:
-            from .vectorizer import Vectorizer
+            from .vectorizer import TextVectorizer
 
-            vectorizer = Vectorizer()
+            vectorizer = TextVectorizer()
             vectorizer.search(text_query, path, top_k, score)
 
     def set_hypertagfs_dir(self, path: str):
@@ -386,6 +438,7 @@ def main():
         "daemon": daemon,
         "graph": graph,
         "index": ht.index,
+        "search_image": ht.search_image,
         "search": ht.search,
     }
     fire.Fire(fire_cli)

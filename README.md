@@ -2,7 +2,7 @@
 
 File organization made easy. HyperTag let's humans intuitively express how they think about their files using tags.
 
-**Objective Function**: Minimize the time between a thought and access to all your relevant files.
+**Objective Function**: Minimize time between a thought and access to all relevant files.
 
 ## Install
 Available on [PyPI](https://pypi.org/project/hypertag/)
@@ -17,7 +17,7 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
 
-**Semantic Search  (Experimental)**: Search through all your text documents (yes, even PDF's) content. This function is powered by the awesome [Sentence Transformers](https://github.com/UKPLab/sentence-transformers) library. Currently only English is supported.
+**Semantic Search  (Experimental)**: Search for **images** (jpg, png) and **text documents** (yes, even PDF's) content with a simple text query. Text search is powered by the awesome [Sentence Transformers](https://github.com/UKPLab/sentence-transformers) library. Text to image search is powered by OpenAI's [CLIP model](https://openai.com/blog/clip/). Currently only English queries are supported.
 
 **HyperTag Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation with automatic query result population. Also spawns the DaemonService which speeds up semantic search significantly.
 
@@ -72,18 +72,27 @@ OR (union): <br>
 MINUS (difference): <br>
 ```$ hypertag query human minus "Homo Sapiens"```
 
-### Index available text files
+### Index supported image and text files
 Only indexed files can be searched.
-
-To parse even unparseable PDF's, install tesseract: `# pacman -S tesseract tesseract-data-eng`
 
 ```$ hypertag index```
 
-### Semantic search indexed text files
-Print file names sorted by matching score.
-Performance benefits greatly from running the HyperTag daemon.
+To parse even unparseable PDF's, install tesseract: `# pacman -S tesseract tesseract-data-eng`
+
+Index only image files: ```$ hypertag index --image```<br>
+Index only text files: ```$ hypertag index --text```
+
+### Semantic search for text files
+Print text file names sorted by matching score.
+Performance benefits greatly from running the HyperTag daemon. Options: --path=0, --score=0, top_k=10
 
 ```$ hypertag search "your important text query"```
+
+### Semantic search for image files
+Print image file names sorted by matching score.
+Performance benefits greatly from running the HyperTag daemon. Options: --path=0, --score=0, top_k=10
+
+```$ hypertag search_image "your image content description"```
 
 ### Print all tags of file/s
 
@@ -132,11 +141,12 @@ Default is the user's home directory
 ```$ hypertag set_hypertagfs_dir path/to/directory```
 
 ## Architecture
-- Python powers HyperTag
+- Python and it's vibrant open-source community power HyperTag
 - Many other awesome open-source projects make HyperTag possible (listed in `pyproject.toml`)
 - SQLite3 serves as the meta data storage engine (located at `~/.config/hypertag/hypertag.db`)
 - Symbolic links are used to create the HyperTagFS directory structure
-- Semantic text document search is powered by the awesome [DistilBERT](https://arxiv.org/abs/1910.01108)
+- Semantic text search is powered by the awesome [DistilBERT](https://arxiv.org/abs/1910.01108)
+- Text to image search is powered by OpenAI's impressive [CLIP model](https://openai.com/blog/clip/)
 
 ## Development
 - Clone repo: ```$ git clone https://github.com/SeanPedersen/HyperTag.git```
@@ -154,7 +164,7 @@ Default is the user's home directory
 ## Inspiration
 
 **What is the point of HyperTag's existence?**<br/>
-HyperTag offers many unique features such as the import, semantic search, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying tiny at <1000 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
+HyperTag offers many unique features such as the import, semantic search for images and texts, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying tiny at <1300 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
 
 This project is partially inspired by these open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go

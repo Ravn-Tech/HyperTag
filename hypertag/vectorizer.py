@@ -5,6 +5,8 @@ from typing import Union, Tuple, List
 from pathlib import Path
 import filetype  # type: ignore
 import torch
+from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor  # type: ignore
+from PIL import Image  # type: ignore
 from sentence_transformers import SentenceTransformer  # type: ignore
 from sentence_transformers.util import semantic_search  # type: ignore
 import PyPDF2  # type: ignore
@@ -12,23 +14,116 @@ import textract  # type: ignore
 import wordninja  # type: ignore
 from ftfy import fix_text  # type: ignore
 from .persistor import Persistor
+from .utils import download_url
+from .tokenizer import SimpleTokenizer
 
 
-class Vectorizer:
+class ImageVectorizer:
+    def __init__(self):
+        TOKENIZER_URL = "https://openaipublic.azureedge.net/clip/bpe_simple_vocab_16e6.txt.gz"
+        MODEL_URL = "https://openaipublic.azureedge.net/clip/models/ \
+            40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt"
+        db_path = Path.home() / ".config/hypertag/"
+        clip_files_path = db_path / "CLIP-files"
+        os.makedirs(clip_files_path, exist_ok=True)
+        tokenizer_name = TOKENIZER_URL.split("/")[-1]
+        if not Path(clip_files_path / tokenizer_name).is_file():
+            print("Downloading tokenizer...")
+            download_url(TOKENIZER_URL, clip_files_path / tokenizer_name)
+        model_name = "model.pt"
+        if not Path(clip_files_path / model_name).is_file():
+            print("Downloading CLIP model...")
+            download_url(MODEL_URL, clip_files_path / model_name)
+
+        self.model = torch.jit.load(str(clip_files_path / model_name)).cuda().eval()
+        self.tokenizer = SimpleTokenizer(bpe_path=str(clip_files_path / tokenizer_name))
+        input_resolution = self.model.input_resolution.item()
+        self.preprocess = Compose(
+            [
+                Resize(input_resolution, interpolation=Image.BICUBIC),
+                CenterCrop(input_resolution),
+                ToTensor(),
+            ]
+        )
+        self.image_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).cuda()
+        self.image_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).cuda()
+
+    def search(self, text_query: str, path, top_k, score):
+        with Persistor() as db:
+            file_paths = db.get_indexed_file_paths()
+            compatible_files = get_image_files(file_paths)
+            corpus = db.get_file_embedding_vectors(compatible_files)
+
+        corpus_paths = []
+        corpus_vectors = []
+        for doc_path, embedding_vector in corpus:
+            corpus_vectors.append(json.loads(embedding_vector))
+            corpus_paths.append(doc_path)
+        image_features = torch.Tensor(corpus_vectors)
+        image_features /= image_features.norm(dim=-1, keepdim=True)
+
+        text_query_vector = self.encode_text(text_query)
+        text_query_vector /= text_query_vector.norm(dim=-1, keepdim=True)
+        similarity = text_query_vector.cpu() @ image_features.cpu().T
+        top_matches = torch.topk(similarity, top_k)
+        results = []
+        for corpus_id, score_value in zip(top_matches.indices[0], top_matches.values[0]):
+            file_path = corpus_paths[corpus_id]
+            file_name = file_path.split("/")[-1]
+            if path:
+                file_name = file_path
+            if score:
+                result = f"{file_name} ({score_value:.4f})"
+                results.append(result)
+                print(result)
+            else:
+                results.append(file_name)
+                print(file_name)
+        return results
+
+    def vector_search(self, embedding_vector, image_features):
+        image_features /= image_features.norm(dim=-1, keepdim=True)
+        embedding_vector /= embedding_vector.norm(dim=-1, keepdim=True)
+        # TODO: Run on GPU
+        similarity = embedding_vector.cpu() @ image_features.cpu().T
+        return similarity
+
+    def encode_image(self, path: str):
+        image = Image.open(path).convert("RGB")
+        image = self.preprocess(image)
+        image.unsqueeze_(0)
+        image_input = torch.tensor(image).cuda()
+        image_input -= self.image_mean[:, None, None]
+        image_input /= self.image_std[:, None, None]
+        with torch.no_grad():
+            image_features = self.model.encode_image(image_input).float()
+        return image_features
+
+    def encode_text(self, text: str):
+        text_tokens = [self.tokenizer.encode("This is " + text + "<|endoftext|>")]
+        text_input = torch.zeros(len(text_tokens), self.model.context_length, dtype=torch.long)
+
+        for i, tokens in enumerate(text_tokens):
+            text_input[i, : len(tokens)] = torch.tensor(tokens)
+
+        text_input = text_input.cuda()
+
+        with torch.no_grad():
+            text_features = self.model.encode_text(text_input).float()
+        return text_features
+
+
+class TextVectorizer:
     def __init__(self):
         os.environ["TOKENIZERS_PARALLELISM"] = "true"
-        self.model_name = "stsb-distilbert-base"  # "average_word_embeddings_glove.6B.300d"
-        self.model = SentenceTransformer(self.model_name)
+        model_name = "stsb-distilbert-base"
+        self.model = SentenceTransformer(model_name)
 
     def compute_text_embedding(self, sentences: List[List[str]]) -> List[float]:
-        if self.model_name == "stsb-distilbert-base":
-            for i, s in enumerate(sentences):
-                if len(s) == 1:
-                    sentences[i] = 2 * sentences[i]  # Needed for transformer model
-            sentence_strings = sentences
-        else:
-            sentence_strings = [" ".join(s) for s in sentences]  # For glove (slows transformers)
-        sentence_vectors = self.model.encode(sentence_strings, show_progress_bar=False)
+        for i, s in enumerate(sentences):
+            if len(s) == 1:
+                sentences[i] = 2 * sentences[i]  # Needed for transformer model
+        sentence_vectors = self.model.encode(sentences, show_progress_bar=False)
         if sentence_vectors.shape[0] > 0:
             return torch.Tensor(sentence_vectors.mean(axis=0)).tolist()
         else:
@@ -49,9 +144,11 @@ class Vectorizer:
         for w in args:
             if w.startswith("*"):
                 w = w.replace('"', "").replace("'", "")
-                replicate_n = rex.search(w).group().count("*")
-                for _ in range(replicate_n + 1):
-                    parsed_query.append(w[replicate_n:])
+                matches = rex.search(w)
+                if matches:
+                    replicate_n = matches.group().count("*")
+                    for _ in range(replicate_n + 1):
+                        parsed_query.append(w[replicate_n:])
             else:
                 parsed_query.append(w)
         parsed_text_query = " ".join(parsed_query)
@@ -82,7 +179,7 @@ class Vectorizer:
             if path:
                 file_name = file_path
             if score:
-                result = f"{file_name} ({score_value})"
+                result = f"{file_name} ({score_value:.4f})"
                 results.append(result)
                 print(result)
             else:
@@ -91,13 +188,43 @@ class Vectorizer:
         return results
 
 
-def get_text_documents(file_paths: List[str]) -> List[Tuple[str, str]]:
-    with Persistor() as db:
-        doc_id = db.get_tag_id_by_name("Documents")
-        doc_types = set()
-        for tag_id, _type_name in db.get_tag_id_children_ids_names(doc_id):
-            doc_types.add(db.get_tag_name_by_id(tag_id))
+def get_image_files(file_paths, verbose=False):
+    # Keep only images (JPG)
+    doc_types = {"jpg", "png"}
+    if verbose:
+        print("Supported image file types:", doc_types)
+    compatible_files = []
+    for file_path in file_paths:
+        file_type_guess = filetype.guess(str(file_path))
+        if file_type_guess is None:
+            continue
+        file_type = file_type_guess.extension.lower()
+        if file_type in doc_types:
+            compatible_files.append(str(file_path))
+    return compatible_files
 
+
+def get_text_documents(file_paths: List[str], verbose=False) -> List[Tuple[str, str]]:
+    # TODO: Add markdown support
+    doc_types = {
+        "pdf",
+        "epub",
+        "doc",
+        "docx",
+        "html",
+        "json",
+        "rtf",
+        "txt",
+        "xls",
+        "xlsx",
+        "ps",
+        "pptx",
+        "odt",
+        "eml",
+        "msg",
+    }
+    if verbose:
+        print("Supported text file types:", doc_types)
     # Keep only text files
     compatible_files = []
     for file_path in file_paths:
