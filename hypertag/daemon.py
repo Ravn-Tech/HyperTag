@@ -82,6 +82,8 @@ class ChangeHandler(FileSystemEventHandler):
         if event.is_directory:
             tag_name = path.name
             parent_tag_name = path.parent.name
+            if parent_tag_name == "HyperTagFS":
+                return
             print(
                 "Removing parent tag association for:",
                 tag_name,
