@@ -62,7 +62,7 @@ Print fuzzy matched tag: ```$ hypertag query man --verbose``` <br>
 Disable fuzzy matching: ```$ hypertag query human --fuzzy=0```
 
 Default operand is AND (intersection): <br>
-```$ hypertag query human "Homo Sapiens"```
+```$ hypertag query human "Homo Sapiens"``` is equivalent to ```$ hypertag query human and "Homo Sapiens"```
 
 OR (union): <br>
 ```$ hypertag query human or "Homo Sapiens"```
