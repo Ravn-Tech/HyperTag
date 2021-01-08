@@ -20,6 +20,7 @@ from .tokenizer import SimpleTokenizer
 
 class CLIPVectorizer:
     """ Multimodal vector space for images and texts powered by OpenAI's CLIP """
+
     def __init__(self):
         TOKENIZER_URL = "https://openaipublic.azureedge.net/clip/bpe_simple_vocab_16e6.txt.gz"
         MODEL_URL = "https://openaipublic.azureedge.net/clip/models/ \
@@ -50,6 +51,15 @@ class CLIPVectorizer:
         self.image_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).cuda()
 
     def search(self, text_query: str, path, top_k, score):
+        query_vector = None
+        # Check if text_query is an image file path
+        file_path = Path(text_query)
+        if file_path.exists():
+            file_type_guess = filetype.guess(str(file_path))
+            if file_type_guess and file_type_guess.extension in {"jpg", "png"}:
+                query_vector = self.encode_image(str(file_path))
+
+        # Retrieve indexed image vectors
         with Persistor() as db:
             file_paths = db.get_indexed_file_paths()
             compatible_files = get_image_files(file_paths)
@@ -63,10 +73,14 @@ class CLIPVectorizer:
         image_features = torch.Tensor(corpus_vectors)
         image_features /= image_features.norm(dim=-1, keepdim=True)
 
-        text_query_vector = self.encode_text(text_query)
-        text_query_vector /= text_query_vector.norm(dim=-1, keepdim=True)
-        similarity = text_query_vector.cpu() @ image_features.cpu().T
+        # Encode text query
+        if query_vector is None:
+            query_vector = self.encode_text(text_query)
+        query_vector /= query_vector.norm(dim=-1, keepdim=True)
+        # Compute similarity score matrix
+        similarity = query_vector.cpu() @ image_features.cpu().T
         top_matches = torch.topk(similarity, top_k)
+        # Print results
         results = []
         for corpus_id, score_value in zip(top_matches.indices[0], top_matches.values[0]):
             file_path = corpus_paths[corpus_id]
@@ -93,7 +107,7 @@ class CLIPVectorizer:
         image = Image.open(path).convert("RGB")
         image = self.preprocess(image)
         image.unsqueeze_(0)
-        image_input = torch.tensor(image).cuda()
+        image_input = image.cuda()
         image_input -= self.image_mean[:, None, None]
         image_input /= self.image_std[:, None, None]
         with torch.no_grad():

@@ -92,7 +92,11 @@ Performance benefits greatly from running the HyperTag daemon.
 Print image file names sorted by matching score.
 Performance benefits greatly from running the HyperTag daemon.
 
+Text to image:
 ```$ hypertag search_image "your image content description" --path --score --top_k=10```
+
+Image to image:
+```$ hypertag search_image "path/to/image.jpg" --path --score --top_k=10```
 
 ### Print all tags of file/s
 

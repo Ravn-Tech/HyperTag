@@ -21,7 +21,6 @@ class HyperTag:
 
     def search_image(self, *text_queries: str, top_k=10, path=False, score=False):
         """ Execute a semantic search that returns best matching images """
-        # TODO: Add option to search with image as input for similar ones
         text_query = " ".join(text_queries)
         try:
             rpc = rpyc.connect("localhost", 18861)
