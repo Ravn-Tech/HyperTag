@@ -115,7 +115,10 @@ class CLIPVectorizer:
         return image_features
 
     def encode_text(self, text: str):
-        text_tokens = [self.tokenizer.encode("This is " + text + "<|endoftext|>")]
+        sot_token = self.tokenizer.encoder["<|startoftext|>"]
+        eot_token = self.tokenizer.encoder["<|endoftext|>"]
+        text_token = self.tokenizer.encode("This is a photo of " + text)
+        text_tokens = [[sot_token] + text_token + [eot_token]]
         text_input = torch.zeros(len(text_tokens), self.model.context_length, dtype=torch.long)
 
         for i, tokens in enumerate(text_tokens):
