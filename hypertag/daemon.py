@@ -10,7 +10,7 @@ from rpyc.utils.server import ThreadedServer  # type: ignore
 from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from .persistor import Persistor
-from .vectorizer import TextVectorizer, ImageVectorizer
+from .vectorizer import TextVectorizer, CLIPVectorizer
 
 text_vectorizer = None
 image_vectorizer = None
@@ -141,7 +141,7 @@ def start():
     text_vectorizer = TextVectorizer()
     print("Initializing ImageVectorizer...")
     global image_vectorizer
-    image_vectorizer = ImageVectorizer()
+    image_vectorizer = CLIPVectorizer()
 
     # IPC
     port = 18861

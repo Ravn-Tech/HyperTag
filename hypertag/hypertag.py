@@ -30,9 +30,9 @@ class HyperTag:
             if len(result) == 0:
                 print("No relevant files indexed...")
         except ConnectionRefusedError:
-            from .vectorizer import ImageVectorizer
+            from .vectorizer import CLIPVectorizer
 
-            vectorizer = ImageVectorizer()
+            vectorizer = CLIPVectorizer()
             vectorizer.search(text_query, path, top_k, score)
 
     def index(self, text=None, image=None, rebuild=False, cache=False, cores: int = 0):
@@ -44,7 +44,7 @@ class HyperTag:
 
     def index_images(self):
         """ Vectorize image files (needed for semantic search) """
-        from .vectorizer import ImageVectorizer, get_image_files
+        from .vectorizer import CLIPVectorizer, get_image_files
 
         file_paths = self.db.get_unindexed_file_paths()
         compatible_files = get_image_files(file_paths, verbose=True)
@@ -60,7 +60,7 @@ class HyperTag:
                 remote = False
 
         if not remote:
-            img_vectorizer = ImageVectorizer()
+            img_vectorizer = CLIPVectorizer()
 
         for file_path in tqdm(compatible_files):
             if remote:

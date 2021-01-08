@@ -18,7 +18,8 @@ from .utils import download_url
 from .tokenizer import SimpleTokenizer
 
 
-class ImageVectorizer:
+class CLIPVectorizer:
+    """ Multimodal vector space for images and texts powered by OpenAI's CLIP """
     def __init__(self):
         TOKENIZER_URL = "https://openaipublic.azureedge.net/clip/bpe_simple_vocab_16e6.txt.gz"
         MODEL_URL = "https://openaipublic.azureedge.net/clip/models/ \
