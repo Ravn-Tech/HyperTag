@@ -50,7 +50,7 @@ class CLIPVectorizer:
         self.image_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).cuda()
         self.image_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).cuda()
 
-    def search(self, text_query: str, path, top_k, score):
+    def search_image(self, text_query: str, path, top_k, score):
         query_vector = None
         # Check if text_query is an image file path
         file_path = Path(text_query)

@@ -38,7 +38,7 @@ class DaemonService(rpyc.Service):
 
     def exposed_search_image(self, text_query: str, path=False, top_k=10, score=False):
         if image_vectorizer is not None:
-            return image_vectorizer.search(text_query, path, top_k, score)
+            return image_vectorizer.search_image(text_query, path, top_k, score)
 
 
 class ChangeHandler(FileSystemEventHandler):

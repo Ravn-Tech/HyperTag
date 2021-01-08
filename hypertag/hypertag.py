@@ -32,7 +32,7 @@ class HyperTag:
             from .vectorizer import CLIPVectorizer
 
             vectorizer = CLIPVectorizer()
-            vectorizer.search(text_query, path, top_k, score)
+            vectorizer.search_image(text_query, path, top_k, score)
 
     def index(self, text=None, image=None, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize image & text files (needed for semantic search) """
