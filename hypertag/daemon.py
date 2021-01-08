@@ -54,23 +54,31 @@ class ChangeHandler(FileSystemEventHandler):
 
     def on_created(self, event):
         # DONE Interpret as query and populate with results as symlinks
-        # TODO: Save created query dirs in dedicated to table to recreate later
+        # TODO: Save created query dirs in dedicated table to recreate later
         super().on_created(event)
 
         what = "directory" if event.is_directory else "file"
         print("Created", what, event.src_path)
         if event.is_directory:
-            print("Populating with query results...")
-            path = Path(event.src_path)
-            query = path.name
             from .hypertag import HyperTag
 
             ht = HyperTag()
-            try:
-                args = re.findall(r"'.*?'|\".*?\"|\S+", query)
-                args = [e.replace('"', "") for e in args]
-                args = [e.replace("'", "") for e in args]
+            print("Populating with query results...")
+            path = Path(event.src_path)
+            query = path.name
+            args = re.findall(r"'.*?'|\".*?\"|\S+", query)
+            args = [e.replace('"', "").replace("'", "") for e in args]
+            top_k = [int(a.split("=")[-1]) for a in args if a.startswith("top_k=")][0]
+            args = [a for a in args if not a.startswith("top_k=")]
+
+            parent_tag_name = path.parent.name
+            if parent_tag_name == "Search Texts":
+                query_results = ht.search(*args, path=True, top_k=top_k, _return=True)
+            elif parent_tag_name == "Search Images":
+                query_results = ht.search_image(*args, path=True, top_k=top_k, _return=True)
+            else:
                 query_results = ht.query(*args, path=True)
+            try:
                 for fp in query_results:
                     file_path = Path(fp)
                     os.symlink(file_path, path / file_path.name)
@@ -88,7 +96,7 @@ class ChangeHandler(FileSystemEventHandler):
         if event.is_directory:
             tag_name = path.name
             parent_tag_name = path.parent.name
-            if parent_tag_name == "HyperTagFS":
+            if parent_tag_name in {"HyperTagFS", "Search Texts", "Search Images"}:
                 return
             print(
                 "Removing parent tag association for:",

@@ -19,12 +19,13 @@ class HyperTag:
         self.root_dir = Path(self.db.get_hypertagfs_dir())
         os.makedirs(self.root_dir, exist_ok=True)
 
-    def search_image(self, *text_queries: str, top_k=10, path=False, score=False):
+    def search_image(self, *text_queries: str, top_k=10, path=False, score=False, _return=False):
         """ Execute a semantic search that returns best matching images """
         text_query = " ".join(text_queries)
         try:
             rpc = rpyc.connect("localhost", 18861)
-            for result in rpc.root.search_image(text_query, path, top_k, score):
+            results = rpc.root.search_image(text_query, path, top_k, score)
+            for result in results:
                 print(result)
             if len(result) == 0:
                 print("No relevant files indexed...")
@@ -32,7 +33,9 @@ class HyperTag:
             from .vectorizer import CLIPVectorizer
 
             vectorizer = CLIPVectorizer()
-            vectorizer.search_image(text_query, path, top_k, score)
+            results = vectorizer.search_image(text_query, path, top_k, score)
+        if _return:
+            return results
 
     def index(self, text=None, image=None, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize image & text files (needed for semantic search) """
@@ -139,12 +142,13 @@ class HyperTag:
                 print("Failed to parse file - skipping:", file_path)
         print(f"Vectorized {str(i)} file/s successfully")
 
-    def search(self, *text_queries: str, path=False, top_k=10, score=False):
+    def search(self, *text_queries: str, path=False, top_k=10, score=False, _return=False):
         """ Execute a semantic search that returns best matching text documents """
         text_query = " . ".join(text_queries)
         try:
             rpc = rpyc.connect("localhost", 18861)
-            for result in rpc.root.search(text_query, path, top_k, score):
+            results = rpc.root.search(text_query, path, top_k, score)
+            for result in results:
                 print(result)
             if len(result) == 0:
                 print("No relevant files indexed...")
@@ -152,7 +156,9 @@ class HyperTag:
             from .vectorizer import TextVectorizer
 
             vectorizer = TextVectorizer()
-            vectorizer.search(text_query, path, top_k, score)
+            results = vectorizer.search(text_query, path, top_k, score)
+        if _return:
+            return results
 
     def set_hypertagfs_dir(self, path: str):
         """ Set path for HyperTagFS directory """
@@ -160,17 +166,21 @@ class HyperTag:
 
     def mount(self, root_dir=None, parent_tag_id=None):
         """ Generate HyperTagFS: tag representation using symlinks """
+        if root_dir is None:
+            root_dir = self.root_dir
+        root_path = Path(root_dir)
+
         if parent_tag_id is None:
             print("Updating HyperTagFS...")
             graph()
+            os.makedirs(root_path / "Search Texts", exist_ok=True)
+            os.makedirs(root_path / "Search Images", exist_ok=True)
             tag_ids_names = self.db.get_root_tag_ids_names()
         else:
             tag_ids_names = self.db.get_tag_id_children_ids_names(parent_tag_id)
 
         leaf_tag_ids = {tag_id[0] for tag_id in self.db.get_leaf_tag_ids()}
-        if root_dir is None:
-            root_dir = self.root_dir
-        root_path = Path(root_dir)
+
         for tag_id, name in tag_ids_names:
             file_paths_names = self.db.get_file_paths_names_by_tag_id(tag_id)
             root_tag_path = root_path / name
