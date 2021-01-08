@@ -35,11 +35,11 @@ class HyperTag:
             vectorizer = ImageVectorizer()
             vectorizer.search(text_query, path, top_k, score)
 
-    def index(self, text=True, image=True, rebuild=False, cache=False, cores: int = 0):
+    def index(self, text=None, image=None, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize image & text files (needed for semantic search) """
-        if image:
+        if (image and text is None) or (image and text) or (not image and not text):
             self.index_images()
-        if text:
+        if (text and image is None) or (image and text) or (not image and not text):
             self.index_texts(rebuild, cache, cores)
 
     def index_images(self):
