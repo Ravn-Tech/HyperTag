@@ -202,10 +202,10 @@ class HyperTag:
             if not is_hidden:
                 visible_file_paths.append(p)
         print("Adding files...")
-        self.add(*visible_file_paths)
+        added_file_paths = self.add(*visible_file_paths)
         import_path_dirs = set(str(import_path).split("/"))
         print("Adding tags...")
-        for file_path in tqdm(visible_file_paths):
+        for file_path in tqdm(added_file_paths):
             file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][
                 :-1
             ]
@@ -225,16 +225,17 @@ class HyperTag:
 
     def add(self, *file_paths):
         """ Add file/s """
-        added = 0
+        added = []
         for file_path in tqdm(file_paths):
             try:
                 if Path(file_path).is_file():
                     self.db.add_file(os.path.abspath(file_path))
-                    added += 1
+                    added.append(file_path)
             except sqlite3.IntegrityError:
                 pass
         self.db.conn.commit()
-        print("Added", added, "new file/s")
+        print("Added", len(added), "new file/s")
+        return added
 
     def tags(self, *file_names):
         """ Display all tags of file/s """
