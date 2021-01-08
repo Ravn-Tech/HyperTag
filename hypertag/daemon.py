@@ -68,7 +68,11 @@ class ChangeHandler(FileSystemEventHandler):
             query = path.name
             args = re.findall(r"'.*?'|\".*?\"|\S+", query)
             args = [e.replace('"', "").replace("'", "") for e in args]
-            top_k = [int(a.split("=")[-1]) for a in args if a.startswith("top_k=")][0]
+            top_k = [int(a.split("=")[-1]) for a in args if a.startswith("top_k=")]
+            if top_k:
+                top_k = top_k[0]
+            else:
+                top_k = 10
             args = [a for a in args if not a.startswith("top_k=")]
 
             parent_tag_name = path.parent.name
