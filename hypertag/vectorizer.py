@@ -54,10 +54,14 @@ class CLIPVectorizer:
         query_vector = None
         # Check if text_query is an image file path
         file_path = Path(text_query)
+        print("text_query", text_query, file_path.exists())
         if file_path.exists():
-            file_type_guess = filetype.guess(str(file_path))
-            if file_type_guess and file_type_guess.extension in {"jpg", "png"}:
-                query_vector = self.encode_image(str(file_path))
+            try:
+                file_type_guess = filetype.guess(str(file_path))
+                if file_type_guess and file_type_guess.extension in {"jpg", "png"}:
+                    query_vector = self.encode_image(str(file_path))
+            except IsADirectoryError:
+                pass
 
         # Retrieve indexed image vectors
         with Persistor() as db:
