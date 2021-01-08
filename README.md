@@ -98,6 +98,16 @@ Text to image:
 Image to image:
 ```$ hypertag search_image "path/to/image.jpg" --path --score --top_k=10```
 
+### Start HyperTag Daemon
+Start daemon process with dual function:
+- Watches `HyperTagFS` directory for user changes
+  - Maps file and directory deletions into tag / metatag removal/s
+  - On directory creation: Interprets name as set theory tag query and automatically populates it with results
+  - On directory creation in `Search Images` or `Search Texts`: Interprets name as semantic search query (add top_k=42 to limit result size) and automatically populates it with results
+- Spawns DaemonService to load and expose models used for semantic search, speeding it up significantly
+
+```$ hypertag daemon```
+
 ### Print all tags of file/s
 
 ```$ hypertag tags filename1 filename2```
@@ -131,13 +141,6 @@ Specify [layout algorithm](https://igraph.org/python/doc/tutorial/tutorial.html#
 Generate file system based representation of your files and tags using symbolic links and directories
 
 ```$ hypertag mount```
-
-### Start HyperTag daemon
-Start daemon process with dual function:
-- Watch HyperTagFS directory for user changes
-- Spawn DaemonService to load and expose model used for semantic search
-
-```$ hypertag daemon```
 
 ### Set HyperTagFS directory path
 Default is the user's home directory
