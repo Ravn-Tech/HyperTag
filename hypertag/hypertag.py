@@ -439,7 +439,7 @@ def main():
         "t": ht.tag,
         "untag": ht.untag,
         "metatag": ht.metatag,
-        "mt": ht.metatag,
+        "tt": ht.metatag,
         "merge": ht.merge,
         "show": ht.show,
         "tags": ht.tags,
