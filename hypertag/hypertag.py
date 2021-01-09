@@ -186,16 +186,16 @@ class HyperTag:
             root_tag_path = root_path / name
             if len(file_paths_names) > 0:
                 os.makedirs(root_tag_path, exist_ok=True)
-            symlink_path = root_tag_path
-            if tag_id not in leaf_tag_ids:
-                os.makedirs(root_tag_path / "_files", exist_ok=True)
-                symlink_path = root_tag_path / "_files"
-            for file_path, file_name in file_paths_names:
-                try:
-                    os.symlink(Path(file_path), symlink_path / file_name)
-                except FileExistsError:
-                    pass
-            self.mount(root_tag_path, tag_id)
+                symlink_path = root_tag_path
+                if tag_id not in leaf_tag_ids:
+                    os.makedirs(root_tag_path / "_files", exist_ok=True)
+                    symlink_path = root_tag_path / "_files"
+                for file_path, file_name in file_paths_names:
+                    try:
+                        os.symlink(Path(file_path), symlink_path / file_name)
+                    except FileExistsError:
+                        pass
+                self.mount(root_tag_path, tag_id)
 
     def import_tags(self, import_path: str):
         """Import files with tags inferred from existing directory hierarchy
