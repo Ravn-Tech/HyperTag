@@ -11,7 +11,7 @@ from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from .persistor import Persistor
 from .vectorizer import TextVectorizer, CLIPVectorizer
-from .utils import remove_symlink
+from .utils import update_symlink
 
 text_vectorizer = None
 image_vectorizer = None
@@ -51,7 +51,7 @@ class AutoImportHandler(FileSystemEventHandler):
         # TODO: Handle file rename / move
         super().on_moved(event)
         what = "directory" if event.is_directory else "file"
-        print("Moved", what, ": from", event.src_path, "to", event.dest_path)
+        print("AutoImportHandler - Moved", what, ": from", event.src_path, "to", event.dest_path)
         path = Path(event.dest_path)
         with Persistor() as db:
             file_id = db.get_file_id_by_path(event.src_path)
@@ -60,21 +60,24 @@ class AutoImportHandler(FileSystemEventHandler):
 
         ht = HyperTag()
         if file_id is None and path.is_file:  # Add new file
-            print("Adding file:", path)
+            print("AutoImportHandler - Adding file:", path)
             ht.add(path)
             import_path_dirs = set(str(self.import_path).split("/"))
-            print("Adding tags...")
+            print("AutoImportHandler - Adding tags...")
             ht.auto_add_tags_from_path(path, import_path_dirs)
             ht.db.conn.commit()
             ht.mount(ht.root_dir)
         elif file_id is not None:  # Update existing path
-            print("Updating path & name for:", event.src_path, "to", path)
+            print("AutoImportHandler - Updating path & name for:", event.src_path, "to", path)
             old_name = event.src_path.split("/")[-1]
             with Persistor() as db:
                 db.update_file_by_id(file_id, path)
                 hypertagfs_path = db.get_hypertagfs_dir()
-            # Delete broken symlinks
-            remove_symlink(hypertagfs_path, old_name)
+            # Update broken symlinks
+            update_symlink(hypertagfs_path, old_name, path)
+            # Add possible new tags
+            ht.auto_add_tags_from_path(path, event.src_path, verbose=True, keep_all=True)
+            ht.db.conn.commit()
             # Remount
             ht.mount(ht.root_dir)
 
@@ -83,17 +86,17 @@ class AutoImportHandler(FileSystemEventHandler):
         super().on_created(event)
 
         what = "directory" if event.is_directory else "file"
-        print("Created", what, event.src_path)
+        print("AutoImportHandler - Created", what, event.src_path)
         path = Path(event.src_path)
         is_download_file = str(path).endswith(".crdownload")
         if path.is_file() and not is_download_file:  # Ignore download progress file
             from .hypertag import HyperTag
 
             ht = HyperTag()
-            print("Adding file:", path)
+            print("AutoImportHandler - Adding file:", path)
             ht.add(path)
             import_path_dirs = set(str(self.import_path).split("/"))
-            print("Adding tags...")
+            print("AutoImportHandler - Adding tags...")
             ht.auto_add_tags_from_path(path, import_path_dirs)
             ht.db.conn.commit()
             ht.mount(ht.root_dir)
@@ -104,7 +107,7 @@ class AutoImportHandler(FileSystemEventHandler):
 
         what = "directory" if event.is_directory else "file"
         path = Path(event.src_path)
-        print("Deleted", what, path)
+        print("AutoImportHandler - Deleted", what, path)
 
 
 class HyperTagFSHandler(FileSystemEventHandler):

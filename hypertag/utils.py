@@ -35,3 +35,15 @@ def remove_symlink(directory, file_name):
             os.remove(item)
         if item.is_dir():
             remove_symlink(item, file_name)
+
+
+def update_symlink(directory, file_name, new_path):
+    # Update symlinks named file_name with new_path in directory recursively
+    directory = Path(directory)
+    for item in directory.iterdir():
+        if item.name == file_name and item.is_symlink():
+            temp_link = directory / ("_temp" + file_name)
+            os.symlink(new_path, temp_link)
+            os.rename(temp_link, directory / file_name)
+        if item.is_dir():
+            update_symlink(item, file_name, new_path)

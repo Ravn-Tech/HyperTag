@@ -206,8 +206,12 @@ class HyperTag:
                         pass
                 self.mount(root_tag_path, tag_id)
 
-    def auto_add_tags_from_path(self, file_path: str, import_path_dirs: List[str], verbose=False):
-        file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][:-1]
+    def auto_add_tags_from_path(
+        self, file_path: str, import_path_dirs: List[str], verbose=False, keep_all=False
+    ):
+        file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs]
+        if not keep_all:
+            file_path_tags = file_path_tags[:-1]
         if verbose:
             print("Inferred tags:", file_path_tags)
         self.tag(
