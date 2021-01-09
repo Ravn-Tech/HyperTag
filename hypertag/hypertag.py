@@ -185,9 +185,10 @@ class HyperTag:
             file_paths_names = self.db.get_file_paths_names_by_tag_id(tag_id)
             if len(file_paths_names) > 0:
                 underscore_root_tag_path = root_path / ("_" + name)
-                os.makedirs(underscore_root_tag_path, exist_ok=True)
-                root_tag_path = root_path / (name)
-                move(underscore_root_tag_path, root_tag_path)  # Needed for daemon
+                root_tag_path = root_path / name
+                if not root_tag_path.exists():
+                    os.makedirs(underscore_root_tag_path, exist_ok=True)
+                    move(underscore_root_tag_path, root_tag_path)  # Needed for daemon
                 symlink_path = root_tag_path
                 if tag_id not in leaf_tag_ids:
                     symlink_path = root_tag_path / "_files"

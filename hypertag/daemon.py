@@ -97,7 +97,7 @@ class ChangeHandler(FileSystemEventHandler):
         what = "directory" if event.is_directory else "file"
         path = Path(event.src_path)
         print("Deleted", what, path)
-        if event.is_directory:
+        if event.is_directory and not path.name.startswith("_"):
             tag_name = path.name
             parent_tag_name = path.parent.name
             if parent_tag_name in {"HyperTagFS", "Search Texts", "Search Images"}:
