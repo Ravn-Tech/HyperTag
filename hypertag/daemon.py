@@ -75,7 +75,8 @@ class AutoImportHandler(FileSystemEventHandler):
             # Update broken symlinks
             update_symlink(hypertagfs_path, old_name, path)
             # Add possible new tags
-            ht.auto_add_tags_from_path(path, event.src_path, verbose=True, keep_all=True)
+            import_path_dirs = set(str(event.src_path).split("/"))
+            ht.auto_add_tags_from_path(path, import_path_dirs, verbose=True, keep_all=True)
             ht.db.conn.commit()
             # Remount
             ht.mount(ht.root_dir)

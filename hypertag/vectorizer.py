@@ -83,10 +83,10 @@ class CLIPVectorizer:
         # Print results
         results = []
         for corpus_id, score_value in zip(top_matches.indices[0], top_matches.values[0]):
-            file_path = corpus_paths[corpus_id]
-            file_name = file_path.split("/")[-1]
+            match_file_path = str(corpus_paths[corpus_id])
+            file_name = match_file_path.split("/")[-1]
             if path:
-                file_name = file_path
+                file_name = match_file_path
             if score:
                 result = f"{file_name} ({score_value:.4f})"
                 results.append(result)
