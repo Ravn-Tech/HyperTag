@@ -57,7 +57,8 @@ Merge all associations (files & tags) of tag A into tag B.
 ```$ hypertag merge human into "Homo Sapiens"```
 
 ### Query using Set Theory
-Print file names of the resulting set matching the query. Queries are composed of tags and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right. Shortcut: `$ hypertag q`
+Print file names of the resulting set matching the query. Queries are composed of tags and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right.
+<br>Shortcut: `$ hypertag q`
 
 Print paths: ```$ hypertag query human --path```<br>
 Print fuzzy matched tag: ```$ hypertag query man --verbose``` <br>
@@ -85,14 +86,14 @@ Index only text files: ```$ hypertag index --text```
 ### Semantic search for text files
 Print text file names sorted by matching score.
 Performance benefits greatly from running the HyperTag daemon.
-Shortcut: `$ hypertag s`
+<br>Shortcut: `$ hypertag s`
 
 ```$ hypertag search "your important text query" --path --score --top_k=10```
 
 ### Semantic search for image files
 Print image file names sorted by matching score.
 Performance benefits greatly from running the HyperTag daemon.
-Shortcut: `$ hypertag si`
+<br>Shortcut: `$ hypertag si`
 
 Text to image:
 ```$ hypertag search_image "your image content description" --path --score --top_k=10```
