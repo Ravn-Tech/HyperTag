@@ -54,7 +54,6 @@ class CLIPVectorizer:
         query_vector = None
         # Check if text_query is an image file path
         file_path = Path(text_query)
-        print("text_query", text_query, file_path.exists())
         if file_path.exists():
             try:
                 file_type_guess = filetype.guess(str(file_path))
