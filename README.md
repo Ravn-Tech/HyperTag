@@ -19,7 +19,7 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 **Semantic Text & Image Search  (Experimental)**: Search for **images** (jpg, png) and **text documents** (yes, even PDF's) content with a simple text query. Text search is powered by the awesome [Sentence Transformers](https://github.com/UKPLab/sentence-transformers) library. Text to image search is powered by OpenAI's [CLIP model](https://openai.com/blog/clip/). Currently only English queries are supported.
 
-**HyperTag Daemon  (Experimental)**: Monitors `HyperTagFS` for user changes. Currently supports file and directory (tag) deletions + directory (name as query) creation with automatic query result population. Also spawns the DaemonService which speeds up semantic search significantly.
+**HyperTag Daemon  (Experimental)**: Monitors `HyperTagFS` and directories added to the auto import list for user changes (see section "Start HyperTag Daemon" below). Also spawns the DaemonService which speeds up semantic search significantly.
 
 **Fuzzy Matching Queries**: HyperTag uses fuzzy matching to minimize friction in the unlikely case of a typo.
 
@@ -102,7 +102,7 @@ Image to image:
 ```$ hypertag search_image "path/to/image.jpg" --path --score --top_k=10```
 
 ### Start HyperTag Daemon
-Start daemon process with dual function:
+Start daemon process with triple functionality:
 - Watches `HyperTagFS` directory for user changes
   - Maps file (symlink) and directory deletions into tag / metatag removal/s
   - On directory creation: Interprets name as set theory tag query and automatically populates it with results
