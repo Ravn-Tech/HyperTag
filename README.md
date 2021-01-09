@@ -32,32 +32,32 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 ## CLI Functions
 
 ### Import existing directory recursively
-Import files with tags inferred from the existing directory hierarchy
+Import files with tags inferred from the existing directory hierarchy.
 
 ```$ hypertag import path/to/directory```
 
 ### Tag file/s
-Manually tag files
+Manually tag files. Shortcut: `$ hypertag t`
 
 ```$ hypertag tag humans/*.txt with human "Homo Sapiens"```
 
 ### Untag file/s
-Manually remove tag/s from file/s
+Manually remove tag/s from file/s.
 
 ```$ hypertag untag humans/*.txt with human "Homo Sapiens"```
 
 ### Tag a tag
-Metatag tag/s to create tag hierarchies
+Metatag tag/s to create tag hierarchies. Shortcut: `$ hypertag tt`
 
 ```$ hypertag metatag human with animal```
 
 ### Merge tags
-Merge all associations (files & tags) of tag A into tag B
+Merge all associations (files & tags) of tag A into tag B.
 
 ```$ hypertag merge human into "Homo Sapiens"```
 
 ### Query using Set Theory
-Print file names of the resulting set matching the query. Queries are composed of tags and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right
+Print file names of the resulting set matching the query. Queries are composed of tags and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right. Shortcut: `$ hypertag q`
 
 Print paths: ```$ hypertag query human --path```<br>
 Print fuzzy matched tag: ```$ hypertag query man --verbose``` <br>
@@ -85,12 +85,14 @@ Index only text files: ```$ hypertag index --text```
 ### Semantic search for text files
 Print text file names sorted by matching score.
 Performance benefits greatly from running the HyperTag daemon.
+Shortcut: `$ hypertag s`
 
 ```$ hypertag search "your important text query" --path --score --top_k=10```
 
 ### Semantic search for image files
 Print image file names sorted by matching score.
 Performance benefits greatly from running the HyperTag daemon.
+Shortcut: `$ hypertag si`
 
 Text to image:
 ```$ hypertag search_image "your image content description" --path --score --top_k=10```
@@ -129,7 +131,7 @@ Print paths:
 ```$ hypertag show files --path```
 
 ### Visualize HyperTag Graph
-Visualize the metatag graph hierarchy (saved at HyperTagFS root)
+Visualize the metatag graph hierarchy (saved at HyperTagFS root).
 
 ```$ hypertag graph```
 
@@ -138,12 +140,12 @@ Specify [layout algorithm](https://igraph.org/python/doc/tutorial/tutorial.html#
 ```$ hypertag graph --layout=kamada_kawai```
 
 ### Generate HyperTagFS
-Generate file system based representation of your files and tags using symbolic links and directories
+Generate file system based representation of your files and tags using symbolic links and directories.
 
 ```$ hypertag mount```
 
 ### Set HyperTagFS directory path
-Default is the user's home directory
+Default is the user's home directory.
 
 ```$ hypertag set_hypertagfs_dir path/to/directory```
 
@@ -171,7 +173,7 @@ Default is the user's home directory
 ## Inspiration
 
 **What is the point of HyperTag's existence?**<br/>
-HyperTag offers many unique features such as the import, semantic search for images and texts, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying tiny at <1300 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
+HyperTag offers many unique features such as the import, semantic search for images and texts, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying tiny at <1500 LOC in comparison to TMSU (>10,000 LOC) and SuperTag (>25,000 LOC), making it easy to hack on.
 
 This project is partially inspired by these open-source projects:
 - [TMSU](https://github.com/oniony/TMSU): Written in Go
