@@ -11,6 +11,7 @@ from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from .persistor import Persistor
 from .vectorizer import TextVectorizer, CLIPVectorizer
+from .utils import remove_symlink
 
 text_vectorizer = None
 image_vectorizer = None
@@ -41,7 +42,71 @@ class DaemonService(rpyc.Service):
             return image_vectorizer.search_image(text_query, path, top_k, score)
 
 
-class ChangeHandler(FileSystemEventHandler):
+class AutoImportHandler(FileSystemEventHandler):
+    def __init__(self, import_path):
+        self.import_path = import_path
+        super().__init__()
+
+    def on_moved(self, event):
+        # TODO: Handle file rename / move
+        super().on_moved(event)
+        what = "directory" if event.is_directory else "file"
+        print("Moved", what, ": from", event.src_path, "to", event.dest_path)
+        path = Path(event.dest_path)
+        with Persistor() as db:
+            file_id = db.get_file_id_by_path(event.src_path)
+
+        from .hypertag import HyperTag
+
+        ht = HyperTag()
+        if file_id is None and path.is_file:  # Add new file
+            print("Adding file:", path)
+            ht.add(path)
+            import_path_dirs = set(str(self.import_path).split("/"))
+            print("Adding tags...")
+            ht.auto_add_tags_from_path(path, import_path_dirs)
+            ht.db.conn.commit()
+            ht.mount(ht.root_dir)
+        elif file_id is not None:  # Update existing path
+            print("Updating path & name for:", event.src_path, "to", path)
+            old_name = event.src_path.split("/")[-1]
+            with Persistor() as db:
+                db.update_file_by_id(file_id, path)
+                hypertagfs_path = db.get_hypertagfs_dir()
+            # Delete broken symlinks
+            remove_symlink(hypertagfs_path, old_name)
+            # Remount
+            ht.mount(ht.root_dir)
+
+    def on_created(self, event):
+        # Start auto import
+        super().on_created(event)
+
+        what = "directory" if event.is_directory else "file"
+        print("Created", what, event.src_path)
+        path = Path(event.src_path)
+        if path.is_file and not str(path).endswith(".crdownload"):  # Ignore download progress file
+            from .hypertag import HyperTag
+
+            ht = HyperTag()
+            print("Adding file:", path)
+            ht.add(path)
+            import_path_dirs = set(str(self.import_path).split("/"))
+            print("Adding tags...")
+            ht.auto_add_tags_from_path(path, import_path_dirs)
+            ht.db.conn.commit()
+            ht.mount(ht.root_dir)
+
+    def on_deleted(self, event):
+        # TODO: Remove file and its tags
+        super().on_deleted(event)
+
+        what = "directory" if event.is_directory else "file"
+        path = Path(event.src_path)
+        print("Deleted", what, path)
+
+
+class HyperTagFSHandler(FileSystemEventHandler):
     def __init__(self):
         super().__init__()
 
@@ -90,8 +155,8 @@ class ChangeHandler(FileSystemEventHandler):
                 print("Failed:", ex)
 
     def on_deleted(self, event):
-        # DONE For symlink remove tag
-        # DONE: For directory remove all tag associations
+        """For symlink: remove tag
+        For directory: remove tag associations"""
         super().on_deleted(event)
 
         what = "directory" if event.is_directory else "file"
@@ -128,20 +193,36 @@ class ChangeHandler(FileSystemEventHandler):
         print("Modified", what, ":", event.src_path)
 
 
+def spawn_observer_thread(event_handler, path):
+    print("Spawned observer for:", path)
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    t = threading.Thread(target=observer.start)
+    t.start()
+
+
+def auto_importer():
+    with Persistor() as db:
+        auto_import_paths = db.get_auto_import_paths()
+    print("Spawning Auto-Importer Threads...")
+    for import_path in auto_import_paths:
+        event_handler = AutoImportHandler(import_path)
+        spawn_observer_thread(event_handler, import_path)
+
+
 def watch_hypertagfs():
     with Persistor() as db:
         path = db.get_hypertagfs_dir()
-    print("Watching HyperTagFS:", path)
-    event_handler = ChangeHandler()
-    observer = Observer()
-    observer.schedule(event_handler, path, recursive=True)
-    observer.start()
+    print("Spawning HyperTagFS Watching Thread...")
+    event_handler = HyperTagFSHandler()
+    spawn_observer_thread(event_handler, path)
 
 
 def start():
+    # Spawn Auto-Importer threads
+    auto_importer()
     # Spawn HyperTagFS watch in thread
-    t = threading.Thread(target=watch_hypertagfs)
-    t.start()
+    watch_hypertagfs()
 
     cuda = torch.cuda.is_available()
     if cuda:

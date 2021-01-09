@@ -1,5 +1,5 @@
 import os
-import rpyc  # type: ignore
+from typing import List
 from shutil import rmtree, move
 import sqlite3
 import json
@@ -7,6 +7,7 @@ from multiprocessing import Pool
 from pathlib import Path
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
+import rpyc  # type: ignore
 from .persistor import Persistor
 from .graph import graph
 
@@ -160,6 +161,10 @@ class HyperTag:
         if _return:
             return results
 
+    def add_auto_import_dir(self, path: str):
+        """ Add path for auto import directory (watched by daemon) """
+        self.db.add_auto_import_directory(path)
+
     def set_hypertagfs_dir(self, path: str):
         """ Set path for HyperTagFS directory """
         self.db.set_hypertagfs_dir(path)
@@ -200,6 +205,21 @@ class HyperTag:
                         pass
                 self.mount(root_tag_path, tag_id)
 
+    def auto_add_tags_from_path(self, file_path: str, import_path_dirs: List[str]):
+        file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][:-1]
+        print("Inferred tags:", file_path_tags)
+        self.tag(
+            file_path.name,
+            "with",
+            *file_path_tags,
+            remount=False,
+            add=False,
+            commit=False,
+        )
+        for previous, current in zip(file_path_tags, file_path_tags[1:]):
+            self.metatag(current, "with", previous, remount=False, commit=False)
+        # print(file_path_tags, file_path.name)
+
     def import_tags(self, import_path: str):
         """Import files with tags inferred from existing directory hierarchy
         (ignores hidden directories)"""
@@ -219,20 +239,7 @@ class HyperTag:
         import_path_dirs = set(str(import_path).split("/"))
         print("Adding tags...")
         for file_path in tqdm(added_file_paths):
-            file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][
-                :-1
-            ]
-            self.tag(
-                file_path.name,
-                "with",
-                *file_path_tags,
-                remount=False,
-                add=False,
-                commit=False,
-            )
-            for previous, current in zip(file_path_tags, file_path_tags[1:]):
-                self.metatag(current, "with", previous, remount=False, commit=False)
-            # print(file_path_tags, file_path.name)
+            self.auto_add_tags_from_path(file_path, import_path_dirs)
         self.db.conn.commit()
         self.mount(self.root_dir)
 
@@ -451,6 +458,7 @@ def main():
         "query": ht.query,
         "q": ht.query,
         "set_hypertagfs_dir": ht.set_hypertagfs_dir,
+        "add_auto_import_dir": ht.add_auto_import_dir,
         "mount": ht.mount,
         "daemon": daemon,
         "graph": graph,

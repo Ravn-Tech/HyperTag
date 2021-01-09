@@ -145,6 +145,16 @@ class Persistor:
             """
         )
 
+        self.c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS
+            auto_import_directories(
+                id INTEGER PRIMARY KEY,
+                path TEXT UNIQUE
+            )
+            """
+        )
+
         for group, types in self.file_groups_types.items():
             self.add_tag(group)
             for file_type in types:
@@ -245,6 +255,36 @@ class Persistor:
         tag_id = self.get_tag_id_by_name(name)
         return tag_id
 
+    def add_auto_import_directory(self, path: str):
+        self.c.execute(
+            """
+            INSERT OR IGNORE INTO auto_import_directories(
+                path
+            )
+            VALUES(?)
+            """,
+            [path],
+        )
+        auto_import_dir_id = self.get_auto_import_id_by_path(path)
+        self.conn.commit()
+        return auto_import_dir_id
+
+    def update_file_by_id(self, file_id: int, file_path: str):
+        file_path = str(file_path)
+        file_name = file_path.split("/")[-1]
+        self.c.execute(
+            """
+            UPDATE files
+            SET
+                name = ?,
+                path = ?
+            WHERE
+                file_id = ?
+            """,
+            [file_name, file_path, file_id],
+        )
+        self.conn.commit()
+
     def add_file_embedding_vector(self, file_path: str, embedding_vector: str):
         self.c.execute(
             """
@@ -333,6 +373,13 @@ class Persistor:
         self.c.execute("SELECT tag_id FROM tags WHERE name LIKE ?", [name])
         return self.c.fetchone()[0]
 
+    def get_file_id_by_path(self, path: str):
+        self.c.execute("SELECT file_id FROM files WHERE path LIKE ?", [path])
+        path = self.c.fetchone()
+        if path:
+            path = path[0]
+        return path
+
     def get_file_id_by_name(self, name: str):
         self.c.execute("SELECT file_id FROM files WHERE name LIKE ?", [name])
         return self.c.fetchone()[0]
@@ -340,6 +387,14 @@ class Persistor:
     def get_file_path_by_id(self, file_id: int):
         self.c.execute("SELECT file_path FROM files WHERE file_id = ?", [file_id])
         return self.c.fetchone()[0]
+
+    def get_auto_import_id_by_path(self, path: str):
+        self.c.execute("SELECT id FROM auto_import_directories WHERE path LIKE ?", [path])
+        return self.c.fetchone()[0]
+
+    def get_auto_import_paths(self):
+        self.c.execute("SELECT path FROM auto_import_directories")
+        return [e[0] for e in self.c.fetchall()]
 
     def remove_parent_tag_from_tag(self, parent_tag_name: str, tag_name: str):
         try:

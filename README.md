@@ -107,6 +107,9 @@ Start daemon process with dual function:
   - Maps file (symlink) and directory deletions into tag / metatag removal/s
   - On directory creation: Interprets name as set theory tag query and automatically populates it with results
   - On directory creation in `Search Images` or `Search Texts`: Interprets name as semantic search query (add top_k=42 to limit result size) and automatically populates it with results
+- Watches directories on the auto import list for user changes:
+  - Maps file changes (moves & renames) to DB
+  - On file creation: Adds new file/s with inferred tag/s
 - Spawns DaemonService to load and expose models used for semantic search, speeding it up significantly
 
 ```$ hypertag daemon```
@@ -144,6 +147,11 @@ Specify [layout algorithm](https://igraph.org/python/doc/tutorial/tutorial.html#
 Generate file system based representation of your files and tags using symbolic links and directories.
 
 ```$ hypertag mount```
+
+### Add directory to auto import list
+Directories added to the auto import list will be monitored by the daemon for new files or changes.
+
+```$ hypertag add_auto_import_dir path/to/directory```
 
 ### Set HyperTagFS directory path
 Default is the user's home directory.
