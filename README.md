@@ -104,7 +104,7 @@ Image to image:
 ### Start HyperTag Daemon
 Start daemon process with dual function:
 - Watches `HyperTagFS` directory for user changes
-  - Maps file and directory deletions into tag / metatag removal/s
+  - Maps file (symlink) and directory deletions into tag / metatag removal/s
   - On directory creation: Interprets name as set theory tag query and automatically populates it with results
   - On directory creation in `Search Images` or `Search Texts`: Interprets name as semantic search query (add top_k=42 to limit result size) and automatically populates it with results
 - Spawns DaemonService to load and expose models used for semantic search, speeding it up significantly
