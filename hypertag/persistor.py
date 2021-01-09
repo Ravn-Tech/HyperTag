@@ -459,6 +459,12 @@ class Persistor:
             (parent_tag_id, tag_id),
         )
 
+    def remove_file(self, file_name):
+        file_id = self.get_file_id_by_name(file_name)
+        self.c.execute("DELETE FROM tags_files WHERE file_id = ?", [file_id])
+        self.c.execute("DELETE FROM files WHERE file_id = ?", [file_id])
+        self.conn.commit()
+
     def remove_tag(self, tag_name):
         # Remove all tag associations
         tag_id = self.get_tag_id_by_name(tag_name)

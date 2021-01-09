@@ -10,6 +10,7 @@ from tqdm import tqdm  # type: ignore
 import rpyc  # type: ignore
 from .persistor import Persistor
 from .graph import graph
+from .utils import remove_symlink
 
 
 class HyperTag:
@@ -247,6 +248,13 @@ class HyperTag:
         self.db.conn.commit()
         self.mount(self.root_dir)
 
+    def remove(self, *file_names):
+        """ Remove files """
+        for file_name in tqdm(file_names):
+            self.db.remove_file(file_name)
+            remove_symlink(self.root_dir, file_name)
+        self.mount(self.root_dir)
+
     def add(self, *file_paths):
         """ Add file/s """
         added = []
@@ -449,6 +457,7 @@ def main():
     fire_cli = {
         "help": help,
         "add": ht.add,
+        "remove": ht.remove,
         "import": ht.import_tags,
         "tag": ht.tag,
         "t": ht.tag,
