@@ -1,4 +1,3 @@
-""" Daemon process monitoring changes in HyperTagFS """
 import os
 import re
 from pathlib import Path
