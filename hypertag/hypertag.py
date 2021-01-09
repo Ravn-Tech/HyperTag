@@ -205,9 +205,10 @@ class HyperTag:
                         pass
                 self.mount(root_tag_path, tag_id)
 
-    def auto_add_tags_from_path(self, file_path: str, import_path_dirs: List[str]):
+    def auto_add_tags_from_path(self, file_path: str, import_path_dirs: List[str], verbose=False):
         file_path_tags = [p for p in str(file_path).split("/") if p not in import_path_dirs][:-1]
-        print("Inferred tags:", file_path_tags)
+        if verbose:
+            print("Inferred tags:", file_path_tags)
         self.tag(
             file_path.name,
             "with",
@@ -220,7 +221,7 @@ class HyperTag:
             self.metatag(current, "with", previous, remount=False, commit=False)
         # print(file_path_tags, file_path.name)
 
-    def import_tags(self, import_path: str):
+    def import_tags(self, import_path: str, only_tags=False, verbose=False):
         """Import files with tags inferred from existing directory hierarchy
         (ignores hidden directories)"""
         file_paths = [p for p in list(Path(import_path).rglob("*")) if p.is_file()]
@@ -235,11 +236,14 @@ class HyperTag:
             if not is_hidden:
                 visible_file_paths.append(p)
         print("Adding files...")
-        added_file_paths = self.add(*visible_file_paths)
+        if only_tags:
+            added_file_paths = visible_file_paths
+        else:
+            added_file_paths = self.add(*visible_file_paths)
         import_path_dirs = set(str(import_path).split("/"))
         print("Adding tags...")
         for file_path in tqdm(added_file_paths):
-            self.auto_add_tags_from_path(file_path, import_path_dirs)
+            self.auto_add_tags_from_path(file_path, import_path_dirs, verbose)
         self.db.conn.commit()
         self.mount(self.root_dir)
 
