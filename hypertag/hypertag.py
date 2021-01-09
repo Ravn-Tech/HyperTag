@@ -1,6 +1,6 @@
 import os
 import rpyc  # type: ignore
-from shutil import rmtree
+from shutil import rmtree, move
 import sqlite3
 import json
 from multiprocessing import Pool
@@ -183,13 +183,15 @@ class HyperTag:
 
         for tag_id, name in tag_ids_names:
             file_paths_names = self.db.get_file_paths_names_by_tag_id(tag_id)
-            root_tag_path = root_path / name
             if len(file_paths_names) > 0:
-                os.makedirs(root_tag_path, exist_ok=True)
+                underscore_root_tag_path = root_path / ("_" + name)
+                os.makedirs(underscore_root_tag_path, exist_ok=True)
+                root_tag_path = root_path / (name)
+                move(underscore_root_tag_path, root_tag_path)  # Needed for daemon
                 symlink_path = root_tag_path
                 if tag_id not in leaf_tag_ids:
-                    os.makedirs(root_tag_path / "_files", exist_ok=True)
                     symlink_path = root_tag_path / "_files"
+                    os.makedirs(symlink_path, exist_ok=True)
                 for file_path, file_name in file_paths_names:
                     try:
                         os.symlink(Path(file_path), symlink_path / file_name)

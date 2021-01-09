@@ -59,13 +59,13 @@ class ChangeHandler(FileSystemEventHandler):
 
         what = "directory" if event.is_directory else "file"
         print("Created", what, event.src_path)
-        if event.is_directory:
+        path = Path(event.src_path)
+        query = path.name
+        if event.is_directory and not query.startswith("_"):
             from .hypertag import HyperTag
 
             ht = HyperTag()
             print("Populating with query results...")
-            path = Path(event.src_path)
-            query = path.name
             args = re.findall(r"'.*?'|\".*?\"|\S+", query)
             args = [e.replace('"', "").replace("'", "") for e in args]
             top_k = [int(a.split("=")[-1]) for a in args if a.startswith("top_k=")]
