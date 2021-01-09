@@ -85,7 +85,8 @@ class AutoImportHandler(FileSystemEventHandler):
         what = "directory" if event.is_directory else "file"
         print("Created", what, event.src_path)
         path = Path(event.src_path)
-        if path.is_file and not str(path).endswith(".crdownload"):  # Ignore download progress file
+        is_download_file = str(path).endswith(".crdownload")
+        if path.is_file() and not is_download_file:  # Ignore download progress file
             from .hypertag import HyperTag
 
             ht = HyperTag()
