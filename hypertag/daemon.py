@@ -128,7 +128,7 @@ class ChangeHandler(FileSystemEventHandler):
         print("Modified", what, ":", event.src_path)
 
 
-def watch():
+def watch_hypertagfs():
     with Persistor() as db:
         path = db.get_hypertagfs_dir()
     print("Watching HyperTagFS:", path)
@@ -140,7 +140,7 @@ def watch():
 
 def start():
     # Spawn HyperTagFS watch in thread
-    t = threading.Thread(target=watch)
+    t = threading.Thread(target=watch_hypertagfs)
     t.start()
 
     cuda = torch.cuda.is_available()
