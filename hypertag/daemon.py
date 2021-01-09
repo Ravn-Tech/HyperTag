@@ -148,6 +148,7 @@ def start():
         print("Using CUDA runtime")
     else:
         print("CUDA runtime not available (this might take a while)")
+        # TODO: Only TextVectorizer works without CUDA right now
     print("Initializing TextVectorizer...")
     global text_vectorizer
     text_vectorizer = TextVectorizer()

@@ -344,6 +344,7 @@ class HyperTag:
             # print("Tagged", file_name, "with", tags)
         if commit:
             self.db.conn.commit()
+        # TODO: Remove symlink (get all paths from metatags)
         # Remount (everything is mounted)
         if remount:
             self.mount(self.root_dir)
