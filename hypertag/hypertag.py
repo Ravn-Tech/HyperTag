@@ -451,7 +451,7 @@ def help():
     README: https://github.com/SeanPedersen/HyperTag/blob/master/README.md
     Found a bug or simply feeling lost?
     Do not despair, you're not alone! Let us know at https://github.com/SeanPedersen/HyperTag/issues
-    Chat and read about HyperTag using Matrix at https://matrix.to/#/#hypertag:matrix.neotree.uber.space?via=matrix.neotree.uber.space
+    Chat and read about HyperTag using Matrix at https://bit.ly/2Xtz2Ff
     Print available CLI functions: hypertag
     Print available CLI flags for all commands: hypertag command --help
     """
