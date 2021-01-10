@@ -162,9 +162,9 @@ class HyperTag:
         if _return:
             return results
 
-    def add_auto_import_dir(self, path: str):
+    def add_auto_import_dir(self, path: str, index_images=False, index_texts=False):
         """ Add path for auto import directory (watched by daemon) """
-        self.db.add_auto_import_directory(path)
+        self.db.add_auto_import_directory(path, index_images, index_texts)
 
     def set_hypertagfs_dir(self, path: str):
         """ Set path for HyperTagFS directory """

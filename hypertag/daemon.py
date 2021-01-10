@@ -43,8 +43,15 @@ class DaemonService(rpyc.Service):
 
 class AutoImportHandler(FileSystemEventHandler):
     def __init__(self, import_path):
-        self.import_path = import_path
         super().__init__()
+        self.import_path = import_path
+        with Persistor() as db:
+            self.auto_index_images = db.get_auto_index_images(import_path)
+            self.auto_index_texts = db.get_auto_index_texts(import_path)
+        if self.auto_index_images:
+            print("AutoImportHandler - Auto indexing images for", import_path)
+        if self.auto_index_texts:
+            print("AutoImportHandler - Auto indexing texts for", import_path)
 
     def on_moved(self, event):
         # TODO: Handle file rename / move
@@ -66,6 +73,10 @@ class AutoImportHandler(FileSystemEventHandler):
             ht.auto_add_tags_from_path(path, import_path_dirs)
             ht.db.conn.commit()
             ht.mount(ht.root_dir)
+            if self.auto_index_images:
+                ht.index_images()
+            if self.auto_index_texts:
+                ht.index_texts()
         elif file_id is not None:  # Update existing path
             print("AutoImportHandler - Updating path & name for:", event.src_path, "to", path)
             old_name = event.src_path.split("/")[-1]
@@ -100,6 +111,10 @@ class AutoImportHandler(FileSystemEventHandler):
             ht.auto_add_tags_from_path(path, import_path_dirs)
             ht.db.conn.commit()
             ht.mount(ht.root_dir)
+            if self.auto_index_images:
+                ht.index_images()
+            if self.auto_index_texts:
+                ht.index_texts()
 
     def on_deleted(self, event):
         # TODO: Remove file and its tags

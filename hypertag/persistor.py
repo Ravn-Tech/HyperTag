@@ -99,7 +99,7 @@ class Persistor:
             """
         )
 
-        # Migrate old files table
+        # Migrate old files table TODO: Remove on 1.0 release (add to CREATE)
         try:
             self.c.execute("ALTER TABLE files ADD COLUMN embedding_vector TEXT")
         except sqlite3.OperationalError:
@@ -154,6 +154,15 @@ class Persistor:
             )
             """
         )
+        try:
+            self.c.execute(
+                "ALTER TABLE auto_import_directories ADD COLUMN auto_index_images INTEGER"
+            )
+            self.c.execute(
+                "ALTER TABLE auto_import_directories ADD COLUMN auto_index_texts INTEGER"
+            )
+        except sqlite3.OperationalError:
+            pass
 
         for group, types in self.file_groups_types.items():
             self.add_tag(group)
@@ -255,19 +264,33 @@ class Persistor:
         tag_id = self.get_tag_id_by_name(name)
         return tag_id
 
-    def add_auto_import_directory(self, path: str):
+    def add_auto_import_directory(self, path: str, auto_index_images: bool, auto_index_text: bool):
         self.c.execute(
             """
-            INSERT OR IGNORE INTO auto_import_directories(
-                path
+            INSERT OR REPLACE INTO auto_import_directories(
+                path,
+                auto_index_images,
+                auto_index_texts
             )
-            VALUES(?)
+            VALUES(?, ?, ?)
             """,
-            [path],
+            [path, int(auto_index_images), int(auto_index_text)],
         )
         auto_import_dir_id = self.get_auto_import_id_by_path(path)
         self.conn.commit()
         return auto_import_dir_id
+
+    def get_auto_index_images(self, path):
+        self.c.execute(
+            "SELECT auto_index_images FROM auto_import_directories WHERE path LIKE ?", [path]
+        )
+        return bool(self.c.fetchone()[0])
+
+    def get_auto_index_texts(self, path):
+        self.c.execute(
+            "SELECT auto_index_texts FROM auto_import_directories WHERE path LIKE ?", [path]
+        )
+        return bool(self.c.fetchone()[0])
 
     def update_file_by_id(self, file_id: int, file_path: str):
         file_path = str(file_path)
