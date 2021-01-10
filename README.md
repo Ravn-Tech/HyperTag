@@ -1,6 +1,7 @@
 # HyperTag
 
-File organization made easy. HyperTag let's humans intuitively express how they think about their files using tags.
+Your digital thought mapper.<br>
+HyperTag let's humans intuitively express how they think about their files using tags and machine learning. Instead of introducing proprietary file formats like other existing file organization solutions, HyperTag just layers on top of your existing files without any fuss.
 
 **Objective Function**: Minimize time between a thought and access to all relevant files.
 
