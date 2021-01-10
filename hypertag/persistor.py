@@ -581,7 +581,8 @@ class Persistor:
         data = [e[0] for e in self.c.fetchall()]
         return data
 
-    def get_file_paths_names_by_tag_id(self, tag_id):
+    def get_file_paths_names_by_tag_id(self, tag_id, files_data=[]):
+        # Recursively includes all children tags files
         self.c.execute(
             """
             SELECT f.path, f.name
@@ -592,7 +593,11 @@ class Persistor:
             """,
             [tag_id],
         )
-        data = self.c.fetchall()
+        data = self.c.fetchall() + files_data
+
+        children_tuples = self.get_tag_id_children_ids_names(tag_id)
+        for child_tag_id, _name in children_tuples:
+            data = self.get_file_paths_names_by_tag_id(child_tag_id, data)
         return data
 
     def get_files_by_tag(self, tag_name, show_path, fuzzy, verbose=False):
