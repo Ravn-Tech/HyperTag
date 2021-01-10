@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hypertag"
-version = "0.5.6.1"
+version = "0.5.6.2"
 description = "File organization made for humans"
 readme = "README.md"
 authors = ["Sean <sean-p-96@hotmail.de>"]
