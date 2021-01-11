@@ -246,10 +246,10 @@ class Persistor:
             (file_name, str(file_path)),
         )
         if len(file_name.split(".")) > 1 and file_type:
-            self.add_tag_to_file(file_type, file_name)
+            self.add_tag_to_file(file_type, str(file_path))
         file_group = self.file_types_groups.get(file_type)
         if file_group:
-            self.add_tag_to_file(file_group, file_name)
+            self.add_tag_to_file(file_group, str(file_path))
 
     def add_tag(self, name: str):
         self.c.execute(
@@ -364,8 +364,8 @@ class Persistor:
         data = [e[0] for e in self.c.fetchall()]
         return data
 
-    def add_tag_to_file(self, tag_name: str, file_name: str):
-        file_id = self.get_file_id_by_name(file_name)
+    def add_tag_to_file(self, tag_name: str, file_path: str):
+        file_id = self.get_file_id_by_path(file_path)
         tag_id = self.add_tag(tag_name)
 
         self.c.execute(

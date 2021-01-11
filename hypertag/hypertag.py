@@ -188,7 +188,7 @@ class HyperTag:
             tag_ids_names = self.db.get_tag_id_children_ids_names(parent_tag_id)
 
         leaf_tag_ids = {tag_id[0] for tag_id in self.db.get_leaf_tag_ids()}
-
+        dupes = dict()
         for tag_id, name in tag_ids_names:
             file_paths_names = self.db.get_file_paths_names_by_tag_id(tag_id)
             if len(file_paths_names) > 0:
@@ -203,7 +203,19 @@ class HyperTag:
                     os.makedirs(symlink_path, exist_ok=True)
                 for file_path, file_name in file_paths_names:
                     try:
-                        os.symlink(Path(file_path), symlink_path / file_name)
+                        filepath = Path(file_path)
+                        current_symlink_path = symlink_path / file_name
+                        if current_symlink_path.exists() and current_symlink_path.is_symlink():
+                            existing_target = current_symlink_path.resolve()  # Get symlink target
+                            if str(existing_target) != str(filepath):  # Duplicate?
+                                dupe_i = dupes.get(current_symlink_path)
+                                if dupe_i is None:
+                                    dupes[current_symlink_path] = 1
+                                    dupe_i = 2
+                                dupes[current_symlink_path] += 1
+                                current_symlink_path = symlink_path / (f"{dupe_i}-" + file_name)
+
+                        os.symlink(filepath, current_symlink_path)
                     except FileExistsError:
                         pass
                 self.mount(root_tag_path, tag_id)
@@ -217,7 +229,7 @@ class HyperTag:
         if verbose:
             print("Inferred tags:", file_path_tags)
         self.tag(
-            file_path.name,
+            file_path,
             "with",
             *file_path_tags,
             remount=False,
@@ -295,7 +307,7 @@ class HyperTag:
         added = []
         for path in tqdm(paths):
             try:
-                if path.startswith("http"):
+                if str(path).startswith("http"):
                     file_path = self.add_url(path)
                     self.db.add_file(os.path.abspath(file_path))
                     added.append(path)
@@ -355,25 +367,23 @@ class HyperTag:
     def tag(self, *args, remount=True, add=True, commit=True):
         """ Tag file/s with tag/s """
         # Parse arguments
-        file_names = []
+        file_paths = []
         tags = []
-        is_file_name = True
+        is_file_path = True
         for arg in args:
             if arg == "with":
-                is_file_name = False
+                is_file_path = False
                 continue
-            if is_file_name:
-                file_names.append(arg)
+            if is_file_path:
+                file_paths.append(arg)
             else:
                 tags.append(arg)
         if add:
-            self.add(*file_names)
+            self.add(*file_paths)
         # Add tags
-        for file_name in file_names:
-            file_name = file_name.split("/")[-1]
+        for file_path in file_paths:
             for tag in tags:
-                self.db.add_tag_to_file(tag, file_name)
-            # print("Tagged", file_name, "with", tags)
+                self.db.add_tag_to_file(tag, str(file_path))
         if commit:
             self.db.conn.commit()
         # Remount (everything is mounted)
