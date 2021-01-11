@@ -604,6 +604,21 @@ class Persistor:
         data = [e[0] for e in self.c.fetchall()]
         return data
 
+    def get_file_paths_names_by_tag_id_shallow(self, tag_id):
+        # Includes all files of tag id
+        self.c.execute(
+            """
+            SELECT f.path, f.name
+            FROM files f, tags t, tags_files tf
+            WHERE f.file_id = tf.file_id AND
+                tf.tag_id = t.tag_id AND
+                t.tag_id = ?
+            """,
+            [tag_id],
+        )
+        data = self.c.fetchall()
+        return data
+
     def get_file_paths_names_by_tag_id(self, tag_id, files_data=[]):
         # Recursively includes all children tags files
         self.c.execute(

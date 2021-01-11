@@ -184,13 +184,21 @@ class HyperTag:
             os.makedirs(root_path / "Search Texts", exist_ok=True)
             os.makedirs(root_path / "Search Images", exist_ok=True)
             tag_ids_names = self.db.get_root_tag_ids_names()
+            parent_file_paths_names = None
         else:
             tag_ids_names = self.db.get_tag_id_children_ids_names(parent_tag_id)
+            parent_file_paths_names = set(
+                self.db.get_file_paths_names_by_tag_id_shallow(parent_tag_id)
+            )
 
         leaf_tag_ids = {tag_id[0] for tag_id in self.db.get_leaf_tag_ids()}
         dupes = dict()
         for tag_id, name in tag_ids_names:
-            file_paths_names = self.db.get_file_paths_names_by_tag_id(tag_id)
+            child_file_paths_names = set(self.db.get_file_paths_names_by_tag_id(tag_id))
+            if parent_file_paths_names is None:
+                file_paths_names = child_file_paths_names
+            else:  # Intersect parent files with child
+                file_paths_names = parent_file_paths_names.intersection(child_file_paths_names)
             if len(file_paths_names) > 0:
                 underscore_root_tag_path = root_path / ("_" + name)
                 root_tag_path = root_path / name
