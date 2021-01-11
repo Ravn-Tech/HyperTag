@@ -37,6 +37,10 @@ Import files with tags inferred from the existing directory hierarchy.
 
 ```$ hypertag import path/to/directory```
 
+### Add file/s or URL/s manually
+
+```$ hypertag add path/to/file https://github.com/SeanPedersen/HyperTag```
+
 ### Tag file/s
 Manually tag files. Shortcut: `$ hypertag t`
 
@@ -163,6 +167,7 @@ Default is the user's home directory.
 - Python and it's vibrant open-source community power HyperTag
 - Many other awesome open-source projects make HyperTag possible (listed in `pyproject.toml`)
 - SQLite3 serves as the meta data storage engine (located at `~/.config/hypertag/hypertag.db`)
+- Added URLs are saved in `~/.config/hypertag/web_pages` for websites, others in `~/.config/hypertag/downloads`
 - Symbolic links are used to create the HyperTagFS directory structure
 - Semantic text search is powered by the awesome [DistilBERT](https://arxiv.org/abs/1910.01108)
 - Text to image search is powered by OpenAI's impressive [CLIP model](https://openai.com/blog/clip/)

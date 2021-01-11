@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Set
 from shutil import rmtree, move
 import sqlite3
@@ -8,9 +9,10 @@ from pathlib import Path
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 import rpyc  # type: ignore
+from pywebcopy import WebPage, config
 from .persistor import Persistor
 from .graph import graph
-from .utils import remove_symlink
+from .utils import remove_symlink, download_url
 
 
 class HyperTag:
@@ -259,14 +261,47 @@ class HyperTag:
             remove_symlink(self.root_dir, file_name)
         self.mount(self.root_dir)
 
-    def add(self, *file_paths):
-        """ Add file/s """
+    def scrape(self, url, folder, timeout=1):
+        config.setup_config(url, folder)
+        wp = WebPage()
+        wp.get(url)
+        # start the saving process
+        wp.save_complete()
+        # join the sub threads
+        for t in wp._threads:
+            if t.is_alive():
+                t.join(timeout)
+        # location of the html file written
+        return wp.file_path
+
+    def add_url(self, url):
+        webpages_regex = r"\S+.html|\S+.htm|\S+.php|\S+\/[^.]+"
+        matches = re.findall(webpages_regex, url)
+        if len(matches[0]) == len(url):
+            web_pages_path = self.db.db_path / "web_pages"
+            os.makedirs(web_pages_path, exist_ok=True)
+            index_path = self.scrape(url, str(web_pages_path))
+            return index_path
+        else:
+            downloads_path = self.db.db_path / "downloads"
+            os.makedirs(downloads_path, exist_ok=True)
+            file_name = url.split("/")[-1]
+            file_path = downloads_path / file_name
+            download_url(url, file_path)
+            return file_path
+
+    def add(self, *paths):
+        """ Add file/s or URL/s"""
         added = []
-        for file_path in tqdm(file_paths):
+        for path in tqdm(paths):
             try:
-                if Path(file_path).is_file():
+                if path.startswith("http"):
+                    file_path = self.add_url(path)
                     self.db.add_file(os.path.abspath(file_path))
-                    added.append(file_path)
+                    added.append(path)
+                elif Path(path).is_file():
+                    self.db.add_file(os.path.abspath(path))
+                    added.append(path)
             except sqlite3.IntegrityError:
                 pass
         self.db.conn.commit()

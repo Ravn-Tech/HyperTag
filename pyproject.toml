@@ -32,6 +32,7 @@ sentence-transformers = "^0.4.1"
 rpyc = "^5.0.0"
 torchvision = "^0.8.2"
 Pillow = "^8.1.0"
+pywebcopy = "^6.3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

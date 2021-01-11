@@ -248,8 +248,14 @@ def get_text_documents(file_paths: List[str], verbose=False) -> List[Tuple[str, 
     for file_path in file_paths:
         file_type_guess = filetype.guess(str(file_path))
         if file_type_guess is None:
-            continue
-        file_type = file_type_guess.extension.lower()
+            file_name = file_path.split("/")[-1]
+            name_parts = file_name.split(".")
+            if len(name_parts) > 1 and len(name_parts[-1]) < 6:
+                file_type = name_parts[-1]
+            else:
+                continue
+        else:
+            file_type = file_type_guess.extension.lower()
         if file_type in doc_types:
             compatible_files.append((str(file_path), file_type))
     return compatible_files
