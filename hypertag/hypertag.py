@@ -9,10 +9,10 @@ from pathlib import Path
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 import rpyc  # type: ignore
-from pywebcopy import WebPage, config
+from pywebcopy import WebPage, config  # type: ignore
 from .persistor import Persistor
 from .graph import graph
-from .utils import remove_symlink, download_url
+from .utils import remove_dir, remove_symlink, download_url
 
 
 class HyperTag:
@@ -441,7 +441,7 @@ class HyperTag:
         for tag in tags:
             for parent_tag in parent_tags:
                 # Remove parent_tag dir in all levels
-                self.rmdir(self.root_dir, parent_tag)
+                remove_dir(self.root_dir, parent_tag)
                 # Remove tag dir in root level
                 try:
                     rmtree(self.root_dir / tag)
@@ -451,19 +451,11 @@ class HyperTag:
         if remount:
             self.mount(self.root_dir)
 
-    def rmdir(self, directory, del_dir_name):
-        # Delete dirs named del_dir_name in directory recursively
-        for item in directory.iterdir():
-            if item.name == del_dir_name and item.is_dir():
-                rmtree(item)
-            if item.is_dir():
-                self.rmdir(item, del_dir_name)
-
     def merge(self, tag_a, _into, tag_b):
         """ Merges all associations (files & tags) of tag_a into tag_b """
         print("Merging tag", tag_a, "into", tag_b)
         self.db.merge_tags(tag_a, tag_b)
-        self.rmdir(self.root_dir, tag_a)
+        remove_dir(self.root_dir, tag_a)
         self.mount(self.root_dir)
 
 

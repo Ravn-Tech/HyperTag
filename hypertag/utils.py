@@ -1,6 +1,7 @@
 import urllib.request
 from pathlib import Path
 import os
+from shutil import rmtree
 from tqdm import tqdm  # type: ignore
 
 
@@ -15,6 +16,15 @@ def download_url(url, output_path):
     """ Download url with progress bar """
     with DownloadProgressBar(unit="B", unit_scale=True, miniters=1, desc=url.split("/")[-1]) as t:
         urllib.request.urlretrieve(url, filename=output_path, reporthook=t.update_to)
+
+
+def remove_dir(directory, del_dir_name):
+    # Delete dirs named del_dir_name in directory recursively
+    for item in directory.iterdir():
+        if item.name == del_dir_name and item.is_dir():
+            rmtree(item)
+        if item.is_dir():
+            remove_dir(item, del_dir_name)
 
 
 def remove_file(directory, file_name):
