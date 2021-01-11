@@ -468,7 +468,7 @@ class HyperTag:
 
 
 def daemon():
-    """ Start daemon process watching HyperTagFS """
+    """ Start daemon process """
     print("Starting up daemon...")
     from .daemon import start
     from multiprocessing import Process, set_start_method
