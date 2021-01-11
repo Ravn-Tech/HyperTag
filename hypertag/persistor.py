@@ -131,6 +131,11 @@ class Persistor:
             )
             """
         )
+        # Migrate old tags_files table TODO: Remove on 1.0 release (add to CREATE)
+        try:
+            self.c.execute("ALTER TABLE tags_files ADD COLUMN value TEXT")
+        except sqlite3.OperationalError:
+            pass
 
         self.c.execute(
             """
@@ -364,19 +369,23 @@ class Persistor:
         data = [e[0] for e in self.c.fetchall()]
         return data
 
-    def add_tag_to_file(self, tag_name: str, file_path: str):
-        file_id = self.get_file_id_by_path(file_path)
+    def add_tag_to_file(self, tag_name: str, file_path: str, value=None):
+        if "/" in file_path:
+            file_id = self.get_file_id_by_path(file_path)
+        else:
+            file_id = self.get_file_id_by_name(file_path)
         tag_id = self.add_tag(tag_name)
 
         self.c.execute(
             """
             INSERT OR IGNORE INTO tags_files(
                 file_id,
-                tag_id
+                tag_id,
+                value
             )
-            VALUES(?, ?)
+            VALUES(?, ?, ?)
             """,
-            (file_id, tag_id),
+            (file_id, tag_id, value),
         )
 
     def remove_tag_from_file(self, tag_name: str, file_name: str):
