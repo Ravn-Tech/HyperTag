@@ -41,10 +41,14 @@ Import files with tags inferred from the existing directory hierarchy.
 
 ```$ hypertag add path/to/file https://github.com/SeanPedersen/HyperTag```
 
-### Tag file/s
+### Tag file/s  (with values)
 Manually tag files. Shortcut: `$ hypertag t`
 
 ```$ hypertag tag humans/*.txt with human "Homo Sapiens"```
+
+Add a value to a file's tag:
+
+```$ hypertag tag sean.txt with name="Sean Pedersen"```
 
 ### Untag file/s
 Manually remove tag/s from file/s.
@@ -62,15 +66,16 @@ Merge all associations (files & tags) of tag A into tag B.
 ```$ hypertag merge human into "Homo Sapiens"```
 
 ### Query using Set Theory
-Print file names of the resulting set matching the query. Queries are composed of tags and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right.
+Print file names of the resulting set matching the query. Queries are composed of tags (with values) and operands. Tags are fuzzy matched for convenience. Nesting is currently not supported, queries are evaluated from left to right.
 <br>Shortcut: `$ hypertag q`
 
+Query with a value using a wildcard: ```$ hypertag query name="Sean*"```<br>
 Print paths: ```$ hypertag query human --path```<br>
 Print fuzzy matched tag: ```$ hypertag query man --verbose``` <br>
 Disable fuzzy matching: ```$ hypertag query human --fuzzy=0```
 
 Default operand is AND (intersection): <br>
-```$ hypertag query human "Homo Sapiens"``` is equivalent to ```$ hypertag query human and "Homo Sapiens"```
+```$ hypertag query human name="Sean*"``` is equivalent to ```$ hypertag query human and name="Sean*"```
 
 OR (union): <br>
 ```$ hypertag query human or "Homo Sapiens"```

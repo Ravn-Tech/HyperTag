@@ -356,11 +356,23 @@ class HyperTag:
         """
         # TODO: Parse AST to support queries with brackets
         operands = {"and", "or", "minus"}
-        results = set(self.db.get_files_by_tag(query[0], path, fuzzy, verbose))
+        tag_val = query[0].split("=")
+        if len(tag_val) == 1:
+            tag_query, value = (query[0], None)
+        else:
+            tag_query, value = (tag_val[0], tag_val[-1])
+            value = value.replace("*", "%")
+        results = set(self.db.get_files_by_tag(tag_query, path, fuzzy, value, verbose))
         current_operand = None
         for query_symbol in query[1:]:
             if query_symbol not in operands:
-                file_names = set(self.db.get_files_by_tag(query_symbol, path, fuzzy, verbose))
+                tag_val = query_symbol.split("=")
+                if len(tag_val) == 1:
+                    tag_query, value = (query_symbol, None)
+                else:
+                    tag_query, value = (tag_val[0], tag_val[-1])
+                    value = value.replace("*", "%")
+                file_names = set(self.db.get_files_by_tag(tag_query, path, fuzzy, value, verbose))
                 if current_operand == "or":
                     results = results.union(file_names)
                 elif current_operand == "minus":
@@ -385,13 +397,17 @@ class HyperTag:
             if is_file_path:
                 file_paths.append(arg)
             else:
-                tags.append(arg)
+                tag_val = arg.split("=")
+                if len(tag_val) == 1:
+                    tags.append((arg, None))
+                else:
+                    tags.append((tag_val[0], tag_val[-1]))
         if add:
             self.add(*file_paths)
         # Add tags
         for file_path in file_paths:
-            for tag in tags:
-                self.db.add_tag_to_file(tag, str(file_path))
+            for tag, value in tags:
+                self.db.add_tag_to_file(tag, str(file_path), value)
         if commit:
             self.db.conn.commit()
         # Remount (everything is mounted)

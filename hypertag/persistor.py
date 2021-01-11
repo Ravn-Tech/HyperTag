@@ -647,7 +647,7 @@ class Persistor:
             data = self.get_file_paths_names_by_tag_id(child_tag_id, data)
         return data
 
-    def get_files_by_tag(self, tag_name, show_path, fuzzy, verbose=False):
+    def get_files_by_tag(self, tag_name, show_path, fuzzy, value=None, verbose=False):
         if fuzzy:
             matches = process.extract(tag_name, self.get_tags(), limit=5)
             best_match = None, None
@@ -667,6 +667,11 @@ class Persistor:
             select = "SELECT f.path"
         else:
             select = "SELECT f.name"
+        value_q = ""
+        bindings = [tag_name]
+        if value:
+            value_q = "AND tf.value LIKE ?"
+            bindings = [tag_name, value]
         self.c.execute(
             select
             + """
@@ -674,8 +679,9 @@ class Persistor:
             WHERE f.file_id = tf.file_id AND
                 tf.tag_id = t.tag_id AND
                 t.name LIKE ?
-            """,
-            [tag_name],
+            """
+            + value_q,
+            bindings,
         )
         data = [e[0] for e in self.c.fetchall()]
         return data
