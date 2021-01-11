@@ -67,7 +67,7 @@ class AutoImportHandler(FileSystemEventHandler):
         ht = HyperTag()
         if file_id is None and path.is_file:  # Add new file
             print("AutoImportHandler - Adding file:", path)
-            ht.add(path)
+            ht.add(str(path))
             import_path_dirs = set(str(self.import_path).split("/"))
             print("AutoImportHandler - Adding tags...")
             ht.auto_add_tags_from_path(path, import_path_dirs)
@@ -105,7 +105,7 @@ class AutoImportHandler(FileSystemEventHandler):
 
             ht = HyperTag()
             print("AutoImportHandler - Adding file:", path)
-            ht.add(path)
+            ht.add(str(path))
             import_path_dirs = set(str(self.import_path).split("/"))
             print("AutoImportHandler - Adding tags...")
             ht.auto_add_tags_from_path(path, import_path_dirs)
