@@ -174,8 +174,9 @@ Default is the user's home directory.
 - SQLite3 serves as the meta data storage engine (located at `~/.config/hypertag/hypertag.db`)
 - Added URLs are saved in `~/.config/hypertag/web_pages` for websites, others in `~/.config/hypertag/downloads`
 - Symbolic links are used to create the HyperTagFS directory structure
-- Semantic text search is powered by the awesome [DistilBERT](https://arxiv.org/abs/1910.01108)
-- Text to image search is powered by OpenAI's impressive [CLIP model](https://openai.com/blog/clip/)
+- Semantic Search: boosted using [hnswlib](https://github.com/nmslib/hnswlib/)
+  - Text to text search is powered by the awesome [DistilBERT](https://arxiv.org/abs/1910.01108)
+  - Text to image & image to image search is powered by OpenAI's impressive [CLIP model](https://openai.com/blog/clip/)
 
 ## Development
 - Clone repo: ```$ git clone https://github.com/SeanPedersen/HyperTag.git```
