@@ -80,7 +80,7 @@ class HyperTag:
         if remote:
             rpc.root.update_image_index()
         else:
-            corpus_vectors, corpus_paths = self.db.get_image_corpus()
+            corpus_vectors, corpus_paths = img_vectorizer.get_image_corpus()
             img_vectorizer.update_index(len(corpus_vectors))
 
     def index_texts(self, rebuild=False, cache=False, cores: int = 0):
@@ -155,7 +155,7 @@ class HyperTag:
         if remote:
             rpc.root.update_text_index()
         else:
-            corpus_vectors, corpus_paths = self.db.get_text_corpus()
+            corpus_vectors, corpus_paths = vectorizer.get_text_corpus()
             vectorizer.update_index(len(corpus_vectors))
 
     def search(self, *text_queries: str, path=False, top_k=10, score=False, _return=False):
