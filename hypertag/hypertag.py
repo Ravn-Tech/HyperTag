@@ -206,7 +206,7 @@ class HyperTag:
         leaf_tag_ids = {tag_id[0] for tag_id in self.db.get_leaf_tag_ids()}
         dupes = dict()
         for tag_id, name in tag_ids_names:
-            child_file_paths_names = set(self.db.get_file_paths_names_by_tag_id(tag_id))
+            child_file_paths_names = set(self.db.get_file_paths_names_by_tag_id_shallow(tag_id))
             if parent_file_paths_names is None:
                 file_paths_names = child_file_paths_names
             else:  # Intersect parent files with child
