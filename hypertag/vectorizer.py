@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import logging
 from typing import Union, Tuple, List
 from pathlib import Path
 import filetype  # type: ignore
@@ -8,7 +9,7 @@ import torch
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor  # type: ignore
 from PIL import Image  # type: ignore
 from sentence_transformers import SentenceTransformer  # type: ignore
-from sentence_transformers.util import semantic_search  # type: ignore
+import hnswlib  # type: ignore
 import PyPDF2  # type: ignore
 import textract  # type: ignore
 import wordninja  # type: ignore
@@ -17,11 +18,14 @@ from .persistor import Persistor
 from .utils import download_url
 from .tokenizer import SimpleTokenizer
 
+logging.disable(logging.INFO)
+
 
 class CLIPVectorizer:
     """ Multimodal vector space for images and texts powered by OpenAI's CLIP """
 
-    def __init__(self):
+    def __init__(self, verbose=False):
+        self.verbose = verbose
         TOKENIZER_URL = "https://openaipublic.azureedge.net/clip/bpe_simple_vocab_16e6.txt.gz"
         MODEL_URL = "https://openaipublic.azureedge.net/clip/models/ \
             40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt"
@@ -50,6 +54,79 @@ class CLIPVectorizer:
         self.image_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).cuda()
         self.image_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).cuda()
 
+        # Build or load index
+        corpus_vectors, corpus_paths = self.get_image_corpus()
+        index_dir = Path.home() / ".config/hypertag/index-files/"
+        self.index_path = index_dir / "images.index"
+        os.makedirs(index_dir, exist_ok=True)
+        self.index = hnswlib.Index(space="cosine", dim=len(corpus_vectors[0]))
+
+        if self.index_path.exists():
+            if self.verbose:
+                print("Loading image index...")
+            self.index.load_index(str(self.index_path), max_elements=len(corpus_vectors))
+            self.update_index(len(corpus_vectors))
+        else:
+            # Create the HNSWLIB index
+            if self.verbose:
+                print("Creating HNSWLIB image index...")
+            self.index.init_index(max_elements=len(corpus_vectors), ef_construction=400, M=64)
+            # Train the index to find a suitable clustering
+            self.index.add_items(corpus_vectors, list(range(len(corpus_vectors))))
+            if self.verbose:
+                print("Saving index to:", self.index_path)
+            self.index.save_index(str(self.index_path))
+            # Update DB (set files as indexed)
+            with Persistor() as db:
+                db.set_indexed_by_file_paths(corpus_paths)
+        # Controlling the recall by setting ef (lower is faster but more inaccuare)
+        self.index.set_ef(50)  # ef should always be > top_k_hits
+
+    def update_index(self, current_corpus_length):
+        # Handle new vectorized elements
+        with Persistor() as db:
+            file_paths = db.get_unindexed_file_paths()
+            compatible_files = get_image_files(file_paths)
+            corpus = db.get_file_embedding_vectors(compatible_files)
+        new_corpus_paths = []
+        new_corpus_vectors = []
+        for doc_path, embedding_vector in corpus:
+            new_corpus_vectors.append(json.loads(embedding_vector))
+            new_corpus_paths.append(doc_path)
+        len_new = len(new_corpus_vectors)
+        len_old = current_corpus_length - 1
+        new_total_size = len_old + len_new
+        if self.verbose:
+            print("NEW UNINDEXED FILES:", len_new)
+        if new_corpus_vectors:
+            # Add unindexed vectors to index
+            self.index.resize_index(new_total_size)
+            print(list(range(len_old, new_total_size)))
+            self.index.add_items(
+                new_corpus_vectors,
+                list(range(len_old, new_total_size)),
+            )
+            if self.verbose:
+                print("Saving updated index to:", self.index_path)
+            self.index.save_index(str(self.index_path))
+            # Update DB (set files as indexed)
+            with Persistor() as db:
+                db.set_indexed_by_file_paths(new_corpus_paths)
+
+    def get_image_corpus(self):
+        # Retrieve vectorized image vectors and paths
+        with Persistor() as db:
+            file_paths = db.get_vectorized_file_paths()
+            compatible_files = get_image_files(file_paths)
+            corpus = db.get_file_embedding_vectors(compatible_files)
+
+        corpus_paths = []
+        corpus_vectors = []
+        for doc_path, embedding_vector in corpus:
+            corpus_vectors.append(json.loads(embedding_vector))
+            corpus_paths.append(doc_path)
+        return corpus_vectors, corpus_paths
+
     def search_image(self, text_query: str, path, top_k, score):
         query_vector = None
         # Check if text_query is an image file path
@@ -59,17 +136,7 @@ class CLIPVectorizer:
             if file_type_guess and file_type_guess.extension in {"jpg", "png"}:
                 query_vector = self.encode_image(str(file_path))
 
-        # Retrieve indexed image vectors
-        with Persistor() as db:
-            file_paths = db.get_indexed_file_paths()
-            compatible_files = get_image_files(file_paths)
-            corpus = db.get_file_embedding_vectors(compatible_files)
-
-        corpus_paths = []
-        corpus_vectors = []
-        for doc_path, embedding_vector in corpus:
-            corpus_vectors.append(json.loads(embedding_vector))
-            corpus_paths.append(doc_path)
+        corpus_vectors, corpus_paths = self.get_image_corpus()
         image_features = torch.Tensor(corpus_vectors)
         image_features /= image_features.norm(dim=-1, keepdim=True)
 
@@ -77,12 +144,11 @@ class CLIPVectorizer:
         if query_vector is None:
             query_vector = self.encode_text(text_query)
         query_vector /= query_vector.norm(dim=-1, keepdim=True)
-        # Compute similarity score matrix
-        similarity = query_vector.cpu() @ image_features.cpu().T
-        top_matches = torch.topk(similarity, top_k)
+        # Indexed top-k nearest neighbor query
+        corpus_ids, distances = self.index.knn_query(query_vector.cpu(), k=top_k)
         # Print results
         results = []
-        for corpus_id, score_value in zip(top_matches.indices[0], top_matches.values[0]):
+        for corpus_id, score_value in zip(corpus_ids[0], distances[0]):
             match_file_path = str(corpus_paths[corpus_id])
             file_name = match_file_path.split("/")[-1]
             if path:
@@ -95,13 +161,6 @@ class CLIPVectorizer:
                 results.append(file_name)
                 print(file_name)
         return results
-
-    def vector_search(self, embedding_vector, image_features):
-        image_features /= image_features.norm(dim=-1, keepdim=True)
-        embedding_vector /= embedding_vector.norm(dim=-1, keepdim=True)
-        # TODO: Run on GPU
-        similarity = embedding_vector.cpu() @ image_features.cpu().T
-        return similarity
 
     def encode_image(self, path: str):
         image = Image.open(path).convert("RGB")
@@ -132,10 +191,85 @@ class CLIPVectorizer:
 
 
 class TextVectorizer:
-    def __init__(self):
+    def __init__(self, verbose=False):
+        self.verbose = verbose
         os.environ["TOKENIZERS_PARALLELISM"] = "true"
         model_name = "stsb-distilbert-base"
         self.model = SentenceTransformer(model_name)
+
+        # Build or load index
+        corpus_vectors, corpus_paths = self.get_text_corpus()
+        index_dir = Path.home() / ".config/hypertag/index-files/"
+        self.index_path = index_dir / "texts.index"
+        os.makedirs(index_dir, exist_ok=True)
+        self.index = hnswlib.Index(space="cosine", dim=len(corpus_vectors[0]))
+
+        if self.index_path.exists():
+            if self.verbose:
+                print("Loading text index...")
+            self.index.load_index(str(self.index_path), max_elements=len(corpus_vectors))
+            self.update_index(len(corpus_vectors))
+        else:
+            # Create the HNSWLIB index
+            if self.verbose:
+                print("Creating HNSWLIB text index...")
+            self.index.init_index(max_elements=len(corpus_vectors), ef_construction=400, M=64)
+            # Then we train the index to find a suitable clustering
+            self.index.add_items(corpus_vectors, list(range(len(corpus_vectors))))
+            if self.verbose:
+                print("Saving index to:", self.index_path)
+            self.index.save_index(str(self.index_path))
+            # Update DB (set files as indexed)
+            with Persistor() as db:
+                db.set_indexed_by_file_paths(corpus_paths)
+        # Controlling the recall by setting ef (lower is faster but more inaccuare)
+        self.index.set_ef(50)  # ef should always be > top_k_hits
+
+    def update_index(self, current_corpus_length):
+        # Handle new vectorized but unindexed elements
+        with Persistor() as db:
+            file_paths = db.get_unindexed_file_paths()
+            compatible_files = [path for path, _file_type in get_text_documents(file_paths)]
+            corpus = db.get_file_embedding_vectors(compatible_files)
+        new_corpus_paths = []
+        new_corpus_vectors = []
+        for doc_path, embedding_vector in corpus:
+            new_corpus_vectors.append(json.loads(embedding_vector))
+            new_corpus_paths.append(doc_path)
+        len_new = len(new_corpus_vectors)
+        len_old = current_corpus_length - 1
+        new_total_size = len_old + len_new
+        if self.verbose:
+            print("NEW UNINDEXED FILES:", len_new)
+        if new_corpus_vectors:
+            # Add unindexed vectors to index
+            self.index.resize_index(new_total_size)
+            print(list(range(len_old, new_total_size)))
+            self.index.add_items(
+                new_corpus_vectors,
+                list(range(len_old, new_total_size)),
+            )
+            if self.verbose:
+                print("Saving updated index to:", self.index_path)
+            self.index.save_index(str(self.index_path))
+            # Update DB (set files as indexed)
+            with Persistor() as db:
+                db.set_indexed_by_file_paths(new_corpus_paths)
+
+    def get_text_corpus(self):
+        # Returns text paths and embedding vectors
+        with Persistor() as db:
+            text_files = db.get_files(show_path=True)
+        text_document_tuples = get_text_documents(text_files)
+        text_document_paths = [path for path, _file_type in text_document_tuples]
+        with Persistor() as db:
+            corpus = db.get_file_embedding_vectors(text_document_paths)
+        corpus_paths = []
+        corpus_vectors = []
+        for doc_path, embedding_vector in corpus:
+            corpus_vectors.append(json.loads(embedding_vector))
+            corpus_paths.append(doc_path)
+        return corpus_vectors, corpus_paths
 
     def compute_text_embedding(self, sentences: List[List[str]]) -> List[float]:
         for i, s in enumerate(sentences):
@@ -146,11 +280,6 @@ class TextVectorizer:
             return torch.Tensor(sentence_vectors.mean(axis=0)).tolist()
         else:
             return torch.Tensor([sentence_vectors]).tolist()
-
-    def vector_search(self, query_vector: List[float], corpus_embeddings: List[List[float]], top_k):
-        return semantic_search(
-            torch.Tensor(query_vector), torch.Tensor(corpus_embeddings), top_k=top_k
-        )
 
     def search(self, text_query: str, path=False, top_k=10, score=False):
         """ Execute a semantic search that returns best matching text documents """
@@ -170,28 +299,15 @@ class TextVectorizer:
             else:
                 parsed_query.append(w)
         parsed_text_query = " ".join(parsed_query)
+        corpus_vectors, corpus_paths = self.get_text_corpus()
 
-        with Persistor() as db:
-            text_files = db.get_files(show_path=True)
-        text_document_tuples = get_text_documents(text_files)
-        text_document_paths = [path for path, _file_type in text_document_tuples]
-        with Persistor() as db:
-            corpus = db.get_file_embedding_vectors(text_document_paths)
-        if len(corpus) == 0:
-            print("No relevant files indexed...")
-            return
         sentence_query = clean_transform(parsed_text_query, 0, 1)
         query_vector = self.compute_text_embedding(sentence_query)
-        corpus_paths = []
-        corpus_vectors = []
-        for doc_path, embedding_vector in corpus:
-            corpus_vectors.append(json.loads(embedding_vector))
-            corpus_paths.append(doc_path)
+        # Indexed top-k nearest neighbor query
+        corpus_ids, distances = self.index.knn_query(query_vector, k=top_k)
 
-        top_matches = self.vector_search(query_vector, corpus_vectors, top_k=top_k)
         results = []
-        for match in top_matches[0]:
-            corpus_id, score_value = match["corpus_id"], match["score"]
+        for corpus_id, score_value in zip(corpus_ids[0], distances[0]):
             file_path = corpus_paths[corpus_id]
             file_name = file_path.split("/")[-1]
             if path:

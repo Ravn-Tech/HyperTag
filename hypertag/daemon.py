@@ -32,6 +32,11 @@ class DaemonService(rpyc.Service):
         if text_vectorizer is not None:
             return text_vectorizer.search(text_query, path, top_k, score)
 
+    def exposed_update_text_index(self):
+        if text_vectorizer is not None:
+            corpus_vectors, corpus_paths = text_vectorizer.get_text_corpus()
+            text_vectorizer.update_index(len(corpus_vectors))
+
     def exposed_encode_image(self, path: str):
         if image_vectorizer is not None:
             return json.dumps(image_vectorizer.encode_image(path).tolist())
@@ -39,6 +44,11 @@ class DaemonService(rpyc.Service):
     def exposed_search_image(self, text_query: str, path=False, top_k=10, score=False):
         if image_vectorizer is not None:
             return image_vectorizer.search_image(text_query, path, top_k, score)
+
+    def exposed_update_image_index(self):
+        if image_vectorizer is not None:
+            corpus_vectors, corpus_paths = image_vectorizer.get_image_corpus()
+            image_vectorizer.update_index(len(corpus_vectors))
 
 
 class AutoImportHandler(FileSystemEventHandler):
@@ -251,10 +261,10 @@ def start():
         # TODO: Only TextVectorizer works without CUDA right now
     print("Initializing TextVectorizer...")
     global text_vectorizer
-    text_vectorizer = TextVectorizer()
+    text_vectorizer = TextVectorizer(verbose=True)
     print("Initializing ImageVectorizer...")
     global image_vectorizer
-    image_vectorizer = CLIPVectorizer()
+    image_vectorizer = CLIPVectorizer(verbose=True)
 
     # IPC
     port = 18861

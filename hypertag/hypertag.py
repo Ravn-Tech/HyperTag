@@ -52,7 +52,7 @@ class HyperTag:
         """ Vectorize image files (needed for semantic search) """
         from .vectorizer import CLIPVectorizer, get_image_files
 
-        file_paths = self.db.get_unindexed_file_paths()
+        file_paths = self.db.get_unvectorized_file_paths()
         compatible_files = get_image_files(file_paths, verbose=True)
         print("Vectorizing", len(compatible_files), "images...")
         remote = True
@@ -76,6 +76,12 @@ class HyperTag:
 
             self.db.add_file_embedding_vector(file_path, json.dumps(img_vector))
             self.db.conn.commit()
+        print("Updating index...")
+        if remote:
+            rpc.root.update_image_index()
+        else:
+            corpus_vectors, corpus_paths = self.db.get_image_corpus()
+            img_vectorizer.update_index(len(corpus_vectors))
 
     def index_texts(self, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize text files (needed for semantic search) """
@@ -97,9 +103,9 @@ class HyperTag:
             print("Caching cleaned texts (database will grow big)")
         if rebuild:
             print("Rebuilding index")
-            file_paths = self.db.get_indexed_file_paths()
+            file_paths = self.db.get_vectorized_file_paths()
         else:
-            file_paths = self.db.get_unindexed_file_paths()
+            file_paths = self.db.get_unvectorized_file_paths()
         i = 0
         compatible_files = get_text_documents(file_paths, verbose=True)
         min_words = 5
@@ -145,6 +151,12 @@ class HyperTag:
                 self.db.conn.commit()
                 print("Failed to parse file - skipping:", file_path)
         print(f"Vectorized {str(i)} file/s successfully")
+        print("Updating index...")
+        if remote:
+            rpc.root.update_text_index()
+        else:
+            corpus_vectors, corpus_paths = self.db.get_text_corpus()
+            vectorizer.update_index(len(corpus_vectors))
 
     def search(self, *text_queries: str, path=False, top_k=10, score=False, _return=False):
         """ Execute a semantic search that returns best matching text documents """
@@ -341,7 +353,7 @@ class HyperTag:
         if mode == "files":
             names = self.db.get_files(path)
         elif mode == "index":
-            names = self.db.get_indexed_file_paths(path)
+            names = self.db.get_vectorized_file_paths(path)
         elif mode == "tags":
             names = self.db.get_tags()
         for name in names:

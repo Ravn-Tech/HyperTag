@@ -108,6 +108,10 @@ class Persistor:
             self.c.execute("ALTER TABLE files ADD COLUMN clean_text TEXT")
         except sqlite3.OperationalError:
             pass
+        try:
+            self.c.execute("ALTER TABLE files ADD COLUMN indexed INTEGER")
+        except sqlite3.OperationalError:
+            pass
 
         self.c.execute(
             """
@@ -270,6 +274,7 @@ class Persistor:
         return tag_id
 
     def add_auto_import_directory(self, path: str, auto_index_images: bool, auto_index_text: bool):
+        path = str(Path(path))  # Standardizes path format (trailing / etc.)
         self.c.execute(
             """
             INSERT OR REPLACE INTO auto_import_directories(
@@ -345,7 +350,30 @@ class Persistor:
                     file_embedding_vectors.append((path, embedding_vector))
         return file_embedding_vectors
 
-    def get_indexed_file_paths(self, show_path=True):
+    def set_indexed_by_file_paths(self, file_paths: List[str]):
+        for file_path in file_paths:
+            self.c.execute(
+                """
+                UPDATE files
+                SET
+                    indexed = 1
+                WHERE
+                    path = ?
+                """,
+                [file_path],
+            )
+        self.conn.commit()
+
+    def get_unindexed_file_paths(self, show_path=True):
+        if show_path:
+            head = "SELECT path"
+        else:
+            head = "SELECT name"
+        self.c.execute(head + " FROM files WHERE indexed is NULL")
+        data = [e[0] for e in self.c.fetchall()]
+        return data
+
+    def get_vectorized_file_paths(self, show_path=True):
         if show_path:
             head = "SELECT path"
         else:
@@ -354,7 +382,7 @@ class Persistor:
         data = [e[0] for e in self.c.fetchall()]
         return data
 
-    def get_unindexed_file_paths(self) -> List[str]:
+    def get_unvectorized_file_paths(self) -> List[str]:
         self.c.execute(
             "SELECT path FROM files WHERE embedding_vector is NULL AND clean_text is NULL"
         )
