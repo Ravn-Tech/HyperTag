@@ -59,7 +59,7 @@ class CLIPVectorizer:
         index_dir = Path.home() / ".config/hypertag/index-files/"
         self.index_path = index_dir / "images.index"
         os.makedirs(index_dir, exist_ok=True)
-        self.index = hnswlib.Index(space="cosine", dim=len(corpus_vectors[0]))
+        self.index = hnswlib.Index(space="cosine", dim=512)
 
         if self.index_path.exists():
             if self.verbose:
@@ -68,6 +68,8 @@ class CLIPVectorizer:
             self.update_index(len(corpus_vectors))
         else:
             # Create the HNSWLIB index
+            if not corpus_vectors:
+                return
             if self.verbose:
                 print("Creating HNSWLIB image index...")
             self.index.init_index(max_elements=len(corpus_vectors), ef_construction=400, M=64)
@@ -202,7 +204,7 @@ class TextVectorizer:
         index_dir = Path.home() / ".config/hypertag/index-files/"
         self.index_path = index_dir / "texts.index"
         os.makedirs(index_dir, exist_ok=True)
-        self.index = hnswlib.Index(space="cosine", dim=len(corpus_vectors[0]))
+        self.index = hnswlib.Index(space="cosine", dim=768)
 
         if self.index_path.exists():
             if self.verbose:
@@ -211,6 +213,8 @@ class TextVectorizer:
             self.update_index(len(corpus_vectors))
         else:
             # Create the HNSWLIB index
+            if not corpus_vectors:
+                return
             if self.verbose:
                 print("Creating HNSWLIB text index...")
             self.index.init_index(max_elements=len(corpus_vectors), ef_construction=400, M=64)
