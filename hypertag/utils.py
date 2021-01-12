@@ -12,6 +12,14 @@ class DownloadProgressBar(tqdm):
         self.update(b * b_size - self.n)
 
 
+def is_int(s: str):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
 def download_url(url, output_path):
     """ Download url with progress bar """
     with DownloadProgressBar(unit="B", unit_scale=True, miniters=1, desc=url.split("/")[-1]) as t:

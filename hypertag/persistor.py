@@ -4,6 +4,7 @@ from typing import List
 from pathlib import Path
 import filetype  # type: ignore
 from fuzzywuzzy import process  # type: ignore
+from .utils import is_int
 
 
 class Persistor:
@@ -397,12 +398,16 @@ class Persistor:
         data = [e[0] for e in self.c.fetchall()]
         return data
 
-    def add_tag_to_file(self, tag_name: str, file_path: str, value=None):
-        if "/" in file_path:
-            file_id = self.get_file_id_by_path(file_path)
+    def add_tag_to_file(self, tag_name_or_id: str, file_name_or_path: str, value=None):
+        if is_int(tag_name_or_id):
+            tag_id = int(tag_name_or_id)
         else:
-            file_id = self.get_file_id_by_name(file_path)
-        tag_id = self.add_tag(tag_name)
+            tag_id = self.add_tag(tag_name_or_id)
+
+        if "/" in file_name_or_path:
+            file_id = self.get_file_id_by_path(file_name_or_path)
+        else:
+            file_id = self.get_file_id_by_name(file_name_or_path)
 
         self.c.execute(
             """
@@ -432,6 +437,16 @@ class Persistor:
     def get_tag_id_by_name(self, name: str):
         self.c.execute("SELECT tag_id FROM tags WHERE name LIKE ?", [name])
         return self.c.fetchone()[0]
+
+    def get_parent_tag_ids_by_name(self, tag_name: str):
+        self.c.execute(
+            """
+        SELECT tt.parent_tag_id
+        FROM tags as t, tags_tags as tt
+        WHERE tt.children_tag_id = t.tag_id AND name LIKE ?""",
+            [tag_name],
+        )
+        return [e[0] for e in self.c.fetchall()]
 
     def get_file_id_by_path(self, path: str):
         self.c.execute("SELECT file_id FROM files WHERE path LIKE ?", [path])

@@ -416,10 +416,14 @@ class HyperTag:
                     tags.append((tag_val[0], tag_val[-1]))
         if add:
             self.add(*file_paths)
-        # Add tags
+        # Add tags to files
         for file_path in file_paths:
             for tag, value in tags:
                 self.db.add_tag_to_file(tag, str(file_path), value)
+                parent_tag_ids = self.db.get_parent_tag_ids_by_name(tag)
+                # Add parent tags to file
+                for parent_tag_id in parent_tag_ids:
+                    self.db.add_tag_to_file(parent_tag_id, str(file_path))
         if commit:
             self.db.conn.commit()
         # Remount (everything is mounted)
@@ -454,7 +458,7 @@ class HyperTag:
             self.mount(self.root_dir)
 
     def metatags(self, *tag_names):
-        """ Display all metatags of tag/s """
+        """ Display all metatags (parents) of tag/s """
         tags = set()
         for tag_name in tag_names:
             tags.update(set(self.db.get_meta_tags_by_tag_name(tag_name)))
@@ -476,11 +480,21 @@ class HyperTag:
             else:
                 tags.append(arg)
 
-        # Add tags
+        # Add meta tags
         for tag in tags:
             for parent_tag in parent_tags:
                 self.db.add_parent_tag_to_tag(parent_tag, tag)
             # print("MetaTagged", tag, "with", parent_tags)
+
+            # Add tags to files
+            file_paths = self.db.get_files_by_tag(tag, show_path=True, fuzzy=True)
+            for file_path in file_paths:
+                self.db.add_tag_to_file(tag, str(file_path))
+                parent_tag_ids = self.db.get_parent_tag_ids_by_name(tag)
+                # Add parent tags to file
+                for parent_tag_id in parent_tag_ids:
+                    self.db.add_tag_to_file(parent_tag_id, str(file_path))
+
         if commit:
             self.db.conn.commit()
 
