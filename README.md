@@ -1,14 +1,13 @@
 # HyperTag
 
-Your digital thought mapper.<br>
-HyperTag let's humans intuitively express how they think about their files using tags and machine learning. Instead of introducing proprietary file formats like other existing file organization solutions, HyperTag just layers on top of your existing files without any fuss.
+HyperTag helps humans intuitively express how they think about their files using tags and machine learning. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
 
 **Objective Function**: Minimize time between a thought and access to all relevant files.
 
 ## Install
 Available on [PyPI](https://pypi.org/project/hypertag/)
 
-`$ pip install hypertag`
+`$ pip install hypertag` (needs a CUDA capable GPU right now...)
 
 ## Community
 Join the HyperTag [matrix chat room](https://matrix.to/#/#hypertag:matrix.neotree.uber.space?via=matrix.neotree.uber.space) to stay up to date on the latest developments or to ask for help.
