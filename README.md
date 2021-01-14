@@ -1,4 +1,9 @@
 # HyperTag
+
+HyperTag helps humans intuitively express how they think about their files using tags and machine learning. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
+
+**Objective Function**: Minimize time between a thought and access to all relevant files.
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
@@ -31,11 +36,6 @@
   - [Inspiration](#inspiration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-HyperTag helps humans intuitively express how they think about their files using tags and machine learning. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
-
-**Objective Function**: Minimize time between a thought and access to all relevant files.
-
 ## Install
 Available on [PyPI](https://pypi.org/project/hypertag/)
 
