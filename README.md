@@ -1,6 +1,6 @@
 # HyperTag
 
-HyperTag helps humans intuitively express how they think about their files using tags and machine learning. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
+HyperTag helps humans intuitively express how they think about their files using tags and machine learning. Represent how you think using tags. Find what you look for using semantic search for your text documents (yes, even PDF's) and images. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
 
 **Objective Function**: Minimize time between a thought and access to all relevant files.
 
