@@ -4,6 +4,8 @@ HyperTag helps humans intuitively express how they think about their files using
 
 **Objective Function**: Minimize time between a thought and access to all relevant files.
 
+Accompanying blog post: https://blog.neotree.uber.space/posts/hypertag-file-organization-made-for-humans
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
