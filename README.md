@@ -1,4 +1,36 @@
 # HyperTag
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+- [HyperTag](#hypertag)
+  - [Install](#install)
+  - [Community](#community)
+  - [Overview](#overview)
+  - [CLI Functions](#cli-functions)
+    - [Import existing directory recursively](#import-existing-directory-recursively)
+    - [Add file/s or URL/s manually](#add-files-or-urls-manually)
+    - [Tag file/s  (with values)](#tag-files--with-values)
+    - [Untag file/s](#untag-files)
+    - [Tag a tag](#tag-a-tag)
+    - [Merge tags](#merge-tags)
+    - [Query using Set Theory](#query-using-set-theory)
+    - [Index supported image and text files](#index-supported-image-and-text-files)
+    - [Semantic search for text files](#semantic-search-for-text-files)
+    - [Semantic search for image files](#semantic-search-for-image-files)
+    - [Start HyperTag Daemon](#start-hypertag-daemon)
+    - [Print all tags of file/s](#print-all-tags-of-files)
+    - [Print all metatags of tag/s](#print-all-metatags-of-tags)
+    - [Print all tags](#print-all-tags)
+    - [Print all files](#print-all-files)
+    - [Visualize HyperTag Graph](#visualize-hypertag-graph)
+    - [Generate HyperTagFS](#generate-hypertagfs)
+    - [Add directory to auto import list](#add-directory-to-auto-import-list)
+    - [Set HyperTagFS directory path](#set-hypertagfs-directory-path)
+  - [Architecture](#architecture)
+  - [Development](#development)
+  - [Inspiration](#inspiration)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 HyperTag helps humans intuitively express how they think about their files using tags and machine learning. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
 
