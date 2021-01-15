@@ -31,8 +31,9 @@ class CLIPVectorizer:
             print("Using device:", self.device)
         TOKENIZER_URL = "https://openaipublic.azureedge.net/clip/bpe_simple_vocab_16e6.txt.gz"
         MODEL_URLS = {
-            "cuda":       "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt",
-            "cpu":       "https://battle.shawwn.com/sdb/models/ViT-B-32-cpu.pt",
+            "cuda": "https://openaipublic.azureedge.net/clip/models/"
+            + "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt",
+            "cpu": "https://battle.shawwn.com/sdb/models/ViT-B-32-cpu.pt",
         }
         db_path = Path.home() / ".config/hypertag/"
         clip_files_path = db_path / "CLIP-files"
@@ -43,11 +44,15 @@ class CLIPVectorizer:
             download_url(TOKENIZER_URL, clip_files_path / tokenizer_name)
         model_name = self.device + "-model.pt"
         if not Path(clip_files_path / model_name).is_file():
-            print(f"Downloading CLIP {self.device} model...")
+            print(f"Downloading CLIP {self.device.upper()} model...")
             download_url(MODEL_URLS[self.device], clip_files_path / model_name)
 
         self.model = torch.jit.load(str(clip_files_path / model_name), map_location=self.device)
-        self.model = self.model.eval() if torch.cuda.is_available() and not cpu else self.model.float().eval()
+        self.model = (
+            self.model.eval()
+            if torch.cuda.is_available() and not cpu
+            else self.model.float().eval()
+        )
         self.tokenizer = SimpleTokenizer(bpe_path=str(clip_files_path / tokenizer_name))
         input_resolution = self.model.input_resolution.item()
         self.preprocess = Compose(

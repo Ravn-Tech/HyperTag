@@ -524,6 +524,7 @@ def daemon(cpu=None):
     print("Starting up daemon...")
     from .daemon import start
     from multiprocessing import Process, set_start_method
+
     set_start_method("spawn")
     p = Process(target=start, args=(cpu,))
     p.start()
