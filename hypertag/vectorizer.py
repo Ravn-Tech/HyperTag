@@ -24,9 +24,11 @@ logging.disable(logging.INFO)
 class CLIPVectorizer:
     """ Multimodal vector space for images and texts powered by OpenAI's CLIP """
 
-    def __init__(self, verbose=False):
+    def __init__(self, cpu=None, verbose=False):
         self.verbose = verbose
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = "cuda" if torch.cuda.is_available() and not cpu else "cpu"
+        if verbose:
+            print("Using device:", self.device)
         TOKENIZER_URL = "https://openaipublic.azureedge.net/clip/bpe_simple_vocab_16e6.txt.gz"
         MODEL_URLS = {
             "cuda":       "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt",
@@ -39,12 +41,13 @@ class CLIPVectorizer:
         if not Path(clip_files_path / tokenizer_name).is_file():
             print("Downloading tokenizer...")
             download_url(TOKENIZER_URL, clip_files_path / tokenizer_name)
-        model_name = "model.pt"
+        model_name = self.device + "-model.pt"
         if not Path(clip_files_path / model_name).is_file():
-            print("Downloading CLIP model...")
+            print(f"Downloading CLIP {self.device} model...")
             download_url(MODEL_URLS[self.device], clip_files_path / model_name)
 
-        self.model = torch.jit.load(str(clip_files_path / model_name), map_location=self.device).float().eval()
+        self.model = torch.jit.load(str(clip_files_path / model_name), map_location=self.device)
+        self.model = self.model.eval() if torch.cuda.is_available() and not cpu else self.model.float().eval()
         self.tokenizer = SimpleTokenizer(bpe_path=str(clip_files_path / tokenizer_name))
         input_resolution = self.model.input_resolution.item()
         self.preprocess = Compose(
@@ -54,7 +57,7 @@ class CLIPVectorizer:
                 ToTensor(),
             ]
         )
-        
+
         self.image_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).to(self.device)
         self.image_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).to(self.device)
 

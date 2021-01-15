@@ -23,7 +23,7 @@ class HyperTag:
         self.root_dir = Path(self.db.get_hypertagfs_dir())
         os.makedirs(self.root_dir, exist_ok=True)
 
-    def search_image(self, *text_queries: str, top_k=10, path=False, score=False, _return=False):
+    def search_image(self, *text_queries: str, cpu=None, top_k=10, path=0, score=0, _return=0):
         """ Execute a semantic search that returns best matching images """
         text_query = " ".join(text_queries)
         try:
@@ -36,7 +36,7 @@ class HyperTag:
         except ConnectionRefusedError:
             from .vectorizer import CLIPVectorizer
 
-            vectorizer = CLIPVectorizer()
+            vectorizer = CLIPVectorizer(cpu)
             results = vectorizer.search_image(text_query, path, top_k, score)
         if _return:
             return results
@@ -519,14 +519,13 @@ class HyperTag:
         self.mount(self.root_dir)
 
 
-def daemon():
+def daemon(cpu=None):
     """ Start daemon process """
     print("Starting up daemon...")
     from .daemon import start
     from multiprocessing import Process, set_start_method
-
     set_start_method("spawn")
-    p = Process(target=start)
+    p = Process(target=start, args=(cpu,))
     p.start()
     p.join()
 
