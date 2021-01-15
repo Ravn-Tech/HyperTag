@@ -41,7 +41,7 @@ Accompanying blog post: https://blog.neotree.uber.space/posts/hypertag-file-orga
 ## Install
 Available on [PyPI](https://pypi.org/project/hypertag/)
 
-`$ pip install hypertag` (needs a CUDA capable GPU right now...)
+`$ pip install hypertag` (supports both CPU only & CUDA accelerated execution!)
 
 ## Community
 Join the HyperTag [matrix chat room](https://matrix.to/#/#hypertag:matrix.neotree.uber.space?via=matrix.neotree.uber.space) to stay up to date on the latest developments or to ask for help.
