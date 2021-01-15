@@ -26,9 +26,12 @@ class CLIPVectorizer:
 
     def __init__(self, verbose=False):
         self.verbose = verbose
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         TOKENIZER_URL = "https://openaipublic.azureedge.net/clip/bpe_simple_vocab_16e6.txt.gz"
-        MODEL_URL = "https://openaipublic.azureedge.net/clip/models/ \
-            40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt"
+        MODEL_URLS = {
+            "cuda":       "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt",
+            "cpu":       "https://battle.shawwn.com/sdb/models/ViT-B-32-cpu.pt",
+        }
         db_path = Path.home() / ".config/hypertag/"
         clip_files_path = db_path / "CLIP-files"
         os.makedirs(clip_files_path, exist_ok=True)
@@ -39,9 +42,9 @@ class CLIPVectorizer:
         model_name = "model.pt"
         if not Path(clip_files_path / model_name).is_file():
             print("Downloading CLIP model...")
-            download_url(MODEL_URL, clip_files_path / model_name)
+            download_url(MODEL_URLS[self.device], clip_files_path / model_name)
 
-        self.model = torch.jit.load(str(clip_files_path / model_name)).cuda().eval()
+        self.model = torch.jit.load(str(clip_files_path / model_name), map_location=self.device).float().eval()
         self.tokenizer = SimpleTokenizer(bpe_path=str(clip_files_path / tokenizer_name))
         input_resolution = self.model.input_resolution.item()
         self.preprocess = Compose(
@@ -51,8 +54,9 @@ class CLIPVectorizer:
                 ToTensor(),
             ]
         )
-        self.image_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).cuda()
-        self.image_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).cuda()
+        
+        self.image_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).to(self.device)
+        self.image_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).to(self.device)
 
         # Build or load index
         corpus_vectors, corpus_paths = self.get_image_corpus()
@@ -168,7 +172,7 @@ class CLIPVectorizer:
         image = Image.open(path).convert("RGB")
         image = self.preprocess(image)
         image.unsqueeze_(0)
-        image_input = image.cuda()
+        image_input = image.to(self.device)
         image_input -= self.image_mean[:, None, None]
         image_input /= self.image_std[:, None, None]
         with torch.no_grad():
@@ -185,7 +189,7 @@ class CLIPVectorizer:
         for i, tokens in enumerate(text_tokens):
             text_input[i, : len(tokens)] = torch.tensor(tokens)
 
-        text_input = text_input.cuda()
+        text_input = text_input.to(self.device)
 
         with torch.no_grad():
             text_features = self.model.encode_text(text_input).float()
