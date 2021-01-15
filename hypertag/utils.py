@@ -22,6 +22,9 @@ def is_int(s: str):
 
 def download_url(url, output_path):
     """ Download url with progress bar """
+    opener = urllib.request.build_opener()
+    opener.addheaders = [("User-agent", "")]
+    urllib.request.install_opener(opener)
     with DownloadProgressBar(unit="B", unit_scale=True, miniters=1, desc=url.split("/")[-1]) as t:
         urllib.request.urlretrieve(url, filename=output_path, reporthook=t.update_to)
 

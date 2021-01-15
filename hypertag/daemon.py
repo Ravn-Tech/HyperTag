@@ -247,7 +247,7 @@ def watch_hypertagfs():
     spawn_observer_thread(event_handler, path)
 
 
-def start():
+def start(cpu):
     # Spawn Auto-Importer threads
     auto_importer()
     # Spawn HyperTagFS watch in thread
@@ -255,16 +255,15 @@ def start():
 
     cuda = torch.cuda.is_available()
     if cuda:
-        print("Using CUDA runtime")
+        print("CUDA runtime available")
     else:
         print("CUDA runtime not available (this might take a while)")
-        # TODO: Only TextVectorizer works without CUDA right now
     print("Initializing TextVectorizer...")
     global text_vectorizer
     text_vectorizer = TextVectorizer(verbose=True)
     print("Initializing ImageVectorizer...")
     global image_vectorizer
-    image_vectorizer = CLIPVectorizer(verbose=True)
+    image_vectorizer = CLIPVectorizer(cpu, verbose=True)
 
     # IPC
     port = 18861
