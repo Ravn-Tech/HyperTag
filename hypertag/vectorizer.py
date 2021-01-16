@@ -77,7 +77,7 @@ class CLIPVectorizer:
             if self.verbose:
                 print("Loading image index...")
             self.index.load_index(str(self.index_path), max_elements=len(corpus_vectors))
-            self.update_index(len(corpus_vectors))
+            self.update_index()
         else:
             # Create the HNSWLIB index
             if not corpus_vectors:
@@ -96,7 +96,7 @@ class CLIPVectorizer:
         # Controlling the recall by setting ef (lower is faster but more inaccuare)
         self.index.set_ef(50)  # ef should always be > top_k_hits
 
-    def update_index(self, current_corpus_length):
+    def update_index(self):
         # Handle new vectorized elements
         with Persistor() as db:
             file_paths = db.get_unindexed_file_paths()
@@ -224,7 +224,7 @@ class TextVectorizer:
             if self.verbose:
                 print("Loading text index...")
             self.index.load_index(str(self.index_path), max_elements=len(corpus_vectors))
-            self.update_index(len(corpus_vectors))
+            self.update_index()
         else:
             # Create the HNSWLIB index
             if not corpus_vectors:
@@ -243,11 +243,11 @@ class TextVectorizer:
         # Controlling the recall by setting ef (lower is faster but more inaccuare)
         self.index.set_ef(50)  # ef should always be > top_k_hits
 
-    def update_index(self, current_corpus_length):
-        # Handle new vectorized but unindexed elements
+    def update_index(self):
+        # Handle new vectorized elements
         with Persistor() as db:
             file_paths = db.get_unindexed_file_paths()
-            compatible_files = [path for path, _file_type in get_text_documents(file_paths)]
+            compatible_files = get_image_files(file_paths)
             corpus = db.get_file_embedding_vectors(compatible_files)
         new_corpus_paths = []
         new_corpus_vectors = []
@@ -255,17 +255,19 @@ class TextVectorizer:
             new_corpus_vectors.append(json.loads(embedding_vector))
             new_corpus_paths.append(doc_path)
         len_new = len(new_corpus_vectors)
-        len_old = current_corpus_length - 1
+        len_old = self.index.get_current_count()
         new_total_size = len_old + len_new
         if self.verbose:
+            print("CURRENT INDEXED FILES:", len_old)
             print("NEW UNINDEXED FILES:", len_new)
+            print("NEW TOTAL SIZE:", new_total_size)
         if new_corpus_vectors:
             # Add unindexed vectors to index
             self.index.resize_index(new_total_size)
-            print(list(range(len_old, new_total_size)))
+            new_ids = list(range(len_old, new_total_size))
             self.index.add_items(
                 new_corpus_vectors,
-                list(range(len_old, new_total_size)),
+                new_ids,
             )
             if self.verbose:
                 print("Saving updated index to:", self.index_path)

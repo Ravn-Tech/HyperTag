@@ -82,8 +82,7 @@ class HyperTag:
         if remote:
             rpc.root.update_image_index()
         else:
-            corpus_vectors, corpus_paths = img_vectorizer.get_image_corpus()
-            img_vectorizer.update_index(len(corpus_vectors))
+            img_vectorizer.update_index()
 
     def index_texts(self, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize text files (needed for semantic search) """
@@ -157,8 +156,7 @@ class HyperTag:
         if remote:
             rpc.root.update_text_index()
         else:
-            corpus_vectors, corpus_paths = vectorizer.get_text_corpus()
-            vectorizer.update_index(len(corpus_vectors))
+            vectorizer.update_index()
 
     def search(self, *text_queries: str, path=False, top_k=10, score=False, _return=False):
         """ Execute a semantic search that returns best matching text documents """

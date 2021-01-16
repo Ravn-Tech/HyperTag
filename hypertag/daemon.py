@@ -34,8 +34,7 @@ class DaemonService(rpyc.Service):
 
     def exposed_update_text_index(self):
         if text_vectorizer is not None:
-            corpus_vectors, corpus_paths = text_vectorizer.get_text_corpus()
-            text_vectorizer.update_index(len(corpus_vectors))
+            text_vectorizer.update_index()
 
     def exposed_encode_image(self, path: str):
         if image_vectorizer is not None:
@@ -47,8 +46,7 @@ class DaemonService(rpyc.Service):
 
     def exposed_update_image_index(self):
         if image_vectorizer is not None:
-            corpus_vectors, corpus_paths = image_vectorizer.get_image_corpus()
-            image_vectorizer.update_index(len(corpus_vectors))
+            image_vectorizer.update_index()
 
 
 class AutoImportHandler(FileSystemEventHandler):
