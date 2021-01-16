@@ -108,17 +108,19 @@ class CLIPVectorizer:
             new_corpus_vectors.append(json.loads(embedding_vector))
             new_corpus_paths.append(doc_path)
         len_new = len(new_corpus_vectors)
-        len_old = current_corpus_length - 1
+        len_old = self.index.get_current_count()
         new_total_size = len_old + len_new
         if self.verbose:
+            print("CURRENT INDEXED FILES:", len_old)
             print("NEW UNINDEXED FILES:", len_new)
+            print("NEW TOTAL SIZE:", new_total_size)
         if new_corpus_vectors:
             # Add unindexed vectors to index
             self.index.resize_index(new_total_size)
-            print(list(range(len_old, new_total_size)))
+            new_ids = list(range(len_old, new_total_size))
             self.index.add_items(
                 new_corpus_vectors,
-                list(range(len_old, new_total_size)),
+                new_ids,
             )
             if self.verbose:
                 print("Saving updated index to:", self.index_path)
@@ -163,7 +165,7 @@ class CLIPVectorizer:
         # Print results
         results = []
         for corpus_id, score_value in zip(corpus_ids[0], distances[0]):
-            match_file_path = str(corpus_paths[corpus_id])
+            match_file_path = str(corpus_paths[int(corpus_id)])
             file_name = match_file_path.split("/")[-1]
             if path:
                 file_name = match_file_path

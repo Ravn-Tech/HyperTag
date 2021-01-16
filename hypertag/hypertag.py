@@ -23,7 +23,9 @@ class HyperTag:
         self.root_dir = Path(self.db.get_hypertagfs_dir())
         os.makedirs(self.root_dir, exist_ok=True)
 
-    def search_image(self, *text_queries: str, cpu=None, top_k=10, path=0, score=0, _return=0):
+    def search_image(
+        self, *text_queries: str, cpu=None, top_k=10, path=0, score=0, verbose=0, _return=0
+    ):
         """ Execute a semantic search that returns best matching images """
         text_query = " ".join(text_queries)
         try:
@@ -36,7 +38,7 @@ class HyperTag:
         except ConnectionRefusedError:
             from .vectorizer import CLIPVectorizer
 
-            vectorizer = CLIPVectorizer(cpu)
+            vectorizer = CLIPVectorizer(cpu, verbose)
             results = vectorizer.search_image(text_query, path, top_k, score)
         if _return:
             return results
@@ -66,7 +68,7 @@ class HyperTag:
                 remote = False
 
         if not remote:
-            img_vectorizer = CLIPVectorizer()
+            img_vectorizer = CLIPVectorizer(verbose=1)
 
         for file_path in tqdm(compatible_files):
             if remote:
