@@ -282,7 +282,7 @@ class HyperTag:
         import_path_dirs = set(str(Path(import_path).resolve()).split("/"))
         print("Adding tags...")
         for file_path in tqdm(added_file_paths):
-            self.auto_add_tags_from_path(file_path, import_path_dirs, verbose)
+            self.auto_add_tags_from_path(os.path.abspath(str(file_path)), import_path_dirs, verbose)
         self.db.conn.commit()
         self.mount(self.root_dir)
 
