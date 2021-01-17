@@ -247,7 +247,7 @@ class TextVectorizer:
         # Handle new vectorized elements
         with Persistor() as db:
             file_paths = db.get_unindexed_file_paths()
-            compatible_files = get_image_files(file_paths)
+            compatible_files = [p for p, _t in get_text_documents(file_paths)]
             corpus = db.get_file_embedding_vectors(compatible_files)
         new_corpus_paths = []
         new_corpus_vectors = []

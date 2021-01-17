@@ -132,7 +132,7 @@ class HyperTag:
         print("Starting inference...")
         # Compute embeddings
         if not remote:
-            vectorizer = TextVectorizer()
+            vectorizer = TextVectorizer(verbose=True)
         for file_path, sentences in tqdm(inference_tuples):
             if remote:
                 document_vector = json.loads(rpc.root.compute_text_embedding(json.dumps(sentences)))
