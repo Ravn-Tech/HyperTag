@@ -449,7 +449,7 @@ def clean_transform(text: str, min_words: int, min_word_length: int) -> List[Lis
     for s in sentences:
         ninja_sentence = []
         for w in s.split(" "):
-            if len(w) > 5:
+            if len(w) > 23:  # Words longer than 23 chars are likely missing spaces
                 for nw in wordninja.split(w):  # Split non space seperated word groups up
                     if len(nw) > min_word_length:
                         ninja_sentence.append(nw)
