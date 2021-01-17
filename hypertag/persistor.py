@@ -128,8 +128,8 @@ class Persistor:
             """
             CREATE TABLE IF NOT EXISTS
             tags_files(
-                tag_id INTEGER,
-                file_id INTEGER,
+                tag_id INTEGER NOT NULL,
+                file_id INTEGER NOT NULL,
                 FOREIGN KEY (tag_id) REFERENCES tags(tag_id),
                 FOREIGN KEY (file_id) REFERENCES files(file_id),
                 PRIMARY KEY (tag_id, file_id)
@@ -146,8 +146,8 @@ class Persistor:
             """
             CREATE TABLE IF NOT EXISTS
             tags_tags(
-                parent_tag_id INTEGER,
-                children_tag_id INTEGER,
+                parent_tag_id INTEGER NOT NULL,
+                children_tag_id INTEGER NOT NULL,
                 FOREIGN KEY (parent_tag_id) REFERENCES tags(tag_id),
                 FOREIGN KEY (children_tag_id) REFERENCES tags(tag_id),
                 PRIMARY KEY (parent_tag_id, children_tag_id)
