@@ -14,6 +14,8 @@ class DownloadProgressBar(tqdm):
 
 def is_int(s: str):
     try:
+        if type(s) is float:
+            return False
         int(s)
         return True
     except ValueError:
