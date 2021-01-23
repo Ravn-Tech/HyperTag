@@ -46,15 +46,19 @@ class HyperTag:
     def index(self, text=None, image=None, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize image & text files (needed for semantic search) """
         if (image and text is None) or (image and text) or (not image and not text):
-            self.index_images()
+            self.index_images(rebuild)
         if (text and image is None) or (image and text) or (not image and not text):
             self.index_texts(rebuild, cache, cores)
 
-    def index_images(self):
+    def index_images(self, rebuild=False):
         """ Vectorize image files (needed for semantic search) """
         from .vectorizer import CLIPVectorizer, get_image_files
 
-        file_paths = self.db.get_unvectorized_file_paths()
+        if rebuild:
+            print("Rebuilding images index")
+            file_paths = self.db.get_vectorized_file_paths()
+        else:
+            file_paths = self.db.get_unvectorized_file_paths()
         compatible_files = get_image_files(file_paths, verbose=True)
         print("Vectorizing", len(compatible_files), "images...")
         remote = True
@@ -103,7 +107,7 @@ class HyperTag:
         if cache:
             print("Caching cleaned texts (database will grow big)")
         if rebuild:
-            print("Rebuilding index")
+            print("Rebuilding texts index")
             file_paths = self.db.get_vectorized_file_paths()
         else:
             file_paths = self.db.get_unvectorized_file_paths()
