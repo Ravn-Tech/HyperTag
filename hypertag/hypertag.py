@@ -519,14 +519,14 @@ class HyperTag:
         self.mount(self.root_dir)
 
 
-def daemon(cpu=None):
+def daemon(cpu=None, text=None, image=None):
     """ Start daemon process """
     print("Starting up daemon...")
     from .daemon import start
     from multiprocessing import Process, set_start_method
 
     set_start_method("spawn")
-    p = Process(target=start, args=(cpu,))
+    p = Process(target=start, args=(cpu, text, image))
     p.start()
     p.join()
 

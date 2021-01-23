@@ -245,7 +245,7 @@ def watch_hypertagfs():
     spawn_observer_thread(event_handler, path)
 
 
-def start(cpu):
+def start(cpu, text, image):
     # Spawn Auto-Importer threads
     auto_importer()
     # Spawn HyperTagFS watch in thread
@@ -256,12 +256,14 @@ def start(cpu):
         print("CUDA runtime available")
     else:
         print("CUDA runtime not available (this might take a while)")
-    print("Initializing TextVectorizer...")
-    global text_vectorizer
-    text_vectorizer = TextVectorizer(verbose=True)
-    print("Initializing ImageVectorizer...")
-    global image_vectorizer
-    image_vectorizer = CLIPVectorizer(cpu, verbose=True)
+    if (text and image is None) or (image and text) or (not image and not text):
+        print("Initializing TextVectorizer...")
+        global text_vectorizer
+        text_vectorizer = TextVectorizer(verbose=True)
+    if (image and text is None) or (image and text) or (not image and not text):
+        print("Initializing ImageVectorizer...")
+        global image_vectorizer
+        image_vectorizer = CLIPVectorizer(cpu, verbose=True)
 
     # IPC
     port = 18861
