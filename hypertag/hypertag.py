@@ -13,6 +13,7 @@ from pywebcopy import WebPage, config  # type: ignore
 from .persistor import Persistor
 from .graph import graph
 from .utils import remove_dir, remove_symlink, download_url
+from .__init__ import __version__
 
 
 class HyperTag:
@@ -553,6 +554,7 @@ def main():
     ht = HyperTag()
     fire_cli = {
         "help": help,
+        "version": __version__,
         "add": ht.add,
         "remove": ht.remove,
         "import": ht.import_tags,
