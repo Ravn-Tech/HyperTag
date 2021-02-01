@@ -23,6 +23,7 @@ class Persistor:
         self.file_groups_types = {
             "Images": ["jpg", "png", "svg", "tif", "ico", "icns"],
             "Videos": ["mp4", "gif", "webm", "avi", "mkv"],
+            "Audio": ["mp3", "m4a", "flac", "wav", "wma", "aac", "aa", "aax"],
             "Documents": ["txt", "md", "rst", "pdf", "epub", "doc", "docx"],
             "Source Code": [
                 "sh",
