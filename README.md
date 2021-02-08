@@ -127,6 +127,7 @@ Index only image files: ```$ hypertag index --image```<br>
 Index only text files: ```$ hypertag index --text```
 
 ### Semantic search for text files
+A custom search algorithm combining semantic with token matching search.
 Print text file names sorted by matching score.
 Performance benefits greatly from running the HyperTag daemon.
 <br>Shortcut: `$ hypertag s`
