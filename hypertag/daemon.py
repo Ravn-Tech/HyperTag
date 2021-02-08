@@ -169,7 +169,7 @@ class HyperTagFSHandler(FileSystemEventHandler):
 
             parent_tag_name = path.parent.name
             if parent_tag_name == "Search Texts":
-                query_results = ht.search(*args, path=True, top_k=top_k, _return=True)
+                query_results = ht.semantic_search(*args, path=True, top_k=top_k, _return=True)
             elif parent_tag_name == "Search Images":
                 query_results = ht.search_image(*args, path=True, top_k=top_k, _return=True)
             else:

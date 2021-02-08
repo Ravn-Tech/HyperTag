@@ -149,6 +149,7 @@ class HyperTag:
                 and len(document_vector) > 0
             ):
                 self.db.add_file_embedding_vector(file_path, json.dumps(document_vector))
+                self.db.add_text(file_path, ". ".join([" ".join(s) for s in sentences]))
                 self.db.conn.commit()
                 i += 1
             else:
@@ -163,21 +164,64 @@ class HyperTag:
         else:
             vectorizer.update_index()
 
-    def search(self, *text_queries: str, path=False, top_k=10, score=False, _return=False):
+    def search(self, text_queries: str, path=False, top_k=10, score=False, _return=False):
+        """ Combination of token_search and semantic_search """
+        text_query = text_queries
+
+        token_matches = self.token_search(text_query, path, top_k, score, _return=True)
+        token_matches = [tm.split("/")[-1] for tm in token_matches]
+        results = token_matches[:5]
+        token_matches = token_matches[5:]
+        token_matches_set = set(token_matches)
+
+        semantic_matches = self.semantic_search(text_queries, path, top_k * 4, score, _return=True)
+        semantic_matches_set = set(semantic_matches)
+
+        intersections = token_matches_set.intersection(semantic_matches_set)
+
+        for i in token_matches:
+            if i in intersections:
+                results.append(i)
+        for e in token_matches:
+            if e not in intersections:
+                results.append(e)
+        results += semantic_matches
+        if _return:
+            return results[:top_k]
+        else:
+            for result in results[:top_k]:
+                print(result)
+
+    def token_search(self, text_queries: str, path=False, top_k=10, score=False, _return=False):
+        """ Execute an exact token matching search that returns best matching text documents """
+        # text_query = " ".join(text_queries)
+        text_query = text_queries
+        # print("ST", text_query)
+        results = self.db.search_text(text_query, top_k=top_k)
+        if _return:
+            return results
+        else:
+            for result in results:
+                print(result)
+
+    def semantic_search(self, text_queries: str, path=False, top_k=10, score=False, _return=False):
         """ Execute a semantic search that returns best matching text documents """
-        text_query = " . ".join(text_queries)
+        # text_query = " . ".join(text_queries)
+        text_query = text_queries
+        # print("SS", text_query)
         try:
             rpc = rpyc.connect("localhost", 18861)
             results = rpc.root.search(text_query, path, top_k, score)
-            for result in results:
-                print(result)
+            if not _return:
+                for result in results:
+                    print(result)
             if len(result) == 0:
                 print("No relevant files indexed...")
-        except ConnectionRefusedError:
+        except (ConnectionRefusedError, RuntimeError):
             from .vectorizer import TextVectorizer
 
             vectorizer = TextVectorizer()
-            results = vectorizer.search(text_query, path, top_k, score)
+            results = vectorizer.search(text_query, path, top_k, score, not _return)
         if _return:
             return results
 
@@ -579,6 +623,10 @@ def main():
         "si": ht.search_image,
         "search": ht.search,
         "s": ht.search,
+        "semantic_search": ht.semantic_search,
+        "ss": ht.semantic_search,
+        "search_token": ht.token_search,
+        "st": ht.token_search,
     }
     fire.Fire(fire_cli)
 

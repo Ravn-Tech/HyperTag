@@ -90,6 +90,13 @@ class Persistor:
 
         self.c.execute(
             """
+            CREATE VIRTUAL TABLE IF NOT EXISTS texts
+            USING FTS5(name, body);
+            """
+        )
+
+        self.c.execute(
+            """
             CREATE TABLE IF NOT EXISTS
             files(
                 file_id INTEGER PRIMARY KEY,
@@ -230,6 +237,23 @@ class Persistor:
             (self.ignore_list_name,),
         )
         data = self.c.fetchone()[0].split(",")
+        return data
+
+    def add_text(self, name, text):
+        self.c.execute(
+            """
+        INSERT INTO texts(name, body)
+        VALUES(?, ?)
+            """,
+            (name, str(text)),
+        )
+
+    def search_text(self, query_text, top_k):
+        # Token based match search
+        self.c.execute(
+            "SELECT name FROM texts WHERE texts MATCH ? ORDER BY rank LIMIT ?", [query_text, top_k]
+        )
+        data = [e[0] for e in self.c.fetchall()]
         return data
 
     def add_file(self, path: str):

@@ -301,7 +301,7 @@ class TextVectorizer:
         else:
             return torch.Tensor([sentence_vectors]).tolist()
 
-    def search(self, text_query: str, path=False, top_k=10, score=False):
+    def search(self, text_query: str, path=False, top_k=10, score=False, verbose=True):
         """ Execute a semantic search that returns best matching text documents """
         # Parse query: duplicate words marked with * (increases search weight)
         parsed_query = []
@@ -335,10 +335,12 @@ class TextVectorizer:
             if score:
                 result = f"{file_name} ({score_value:.4f})"
                 results.append(result)
-                print(result)
+                if verbose:
+                    print(result)
             else:
                 results.append(file_name)
-                print(file_name)
+                if verbose:
+                    print(file_name)
         return results
 
 
