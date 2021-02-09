@@ -225,6 +225,7 @@ Default is the user's home directory.
 - Run linter: ```$ flake8```
 - Run type checking: ```$ mypy **/*.py```
 - Run security checking: ```$ bandit --exclude tests/ -r .```
+- Codacy: [https://app.codacy.com/gh/SeanPedersen/HyperTag/dashboard?branch=master](Dashboard)
 - Run HyperTag: ```$ python -m hypertag```
 
 ## Inspiration
