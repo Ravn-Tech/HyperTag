@@ -534,6 +534,8 @@ class Persistor:
         self.conn.commit()
 
     def add_parent_tag_to_tag(self, parent_tag_name: str, tag_name: str):
+        if parent_tag_name.lower() == tag_name.lower():
+            return
         self.c.execute(
             """
             INSERT OR IGNORE INTO tags(
