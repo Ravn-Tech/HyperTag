@@ -328,7 +328,8 @@ class HyperTag:
             added_file_paths = visible_file_paths
         else:
             added_file_paths = self.add(*visible_file_paths)
-        import_path_dirs = set(str(Path(import_path).resolve()).split("/"))
+        import_path_dirs = set(str(Path(import_path).resolve()).split("/")[:-1])
+        print("import_path_dirs", import_path_dirs)
         print("Adding tags...")
         for file_path in tqdm(added_file_paths):
             self.auto_add_tags_from_path(os.path.abspath(str(file_path)), import_path_dirs, verbose)
