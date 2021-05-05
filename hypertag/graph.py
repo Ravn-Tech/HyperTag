@@ -3,12 +3,12 @@ from igraph import Graph, plot  # type: ignore
 from .persistor import Persistor
 
 
-def graph(layout="fruchterman_reingold"):
+def graph(layout="fruchterman_reingold", output=None):
     """ Visualize the HyperTag Graph (saved at HyperTagFS root dir) """
-    graph_viz_name = "hypertag-graph.pdf"
 
     with Persistor() as db:
-        hypertagfs_dir = Path(db.get_hypertagfs_dir())
+        if output is None:
+            output = str(Path(db.get_hypertagfs_dir()) / "hypertag-graph.pdf")
         db.c.execute(
             """
             SELECT name, tag_id
@@ -41,7 +41,8 @@ def graph(layout="fruchterman_reingold"):
     visual_style["vertex_color"] = "yellow"  # type: ignore
     visual_style["layout"] = g.layout(layout)
     visual_style["vertex_label"] = g.vs["name"]
-    plot(g, str(hypertagfs_dir / graph_viz_name), **visual_style)
+    plot(g, output, **visual_style)
+    print("Visualization saved to", output)
 
 
 if __name__ == "__main__":
