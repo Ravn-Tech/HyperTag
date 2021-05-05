@@ -213,7 +213,7 @@ Default is the user's home directory.
   - Text to image & image to image search is powered by OpenAI's impressive [CLIP model](https://openai.com/blog/clip/)
 
 ## Development
-- Find prioritized issues here: [TODO List](https://github.com/SeanPedersen/HyperTag/projects/1)
+- Find prioritized issues here: [TODO List](https://github.com/Ravn-Tech/HyperTag/projects/1)
 - Pick an issue and comment how you plan to tackle it before starting out, to make sure no dev time is wasted.
 - Clone repo: ```$ git clone https://github.com/SeanPedersen/HyperTag.git```
 - `$ cd HyperTag/`
