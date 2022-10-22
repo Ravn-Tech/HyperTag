@@ -485,7 +485,7 @@ class Persistor:
         return self.c.fetchone()[0]
 
     def get_file_path_by_id(self, file_id: int):
-        self.c.execute("SELECT file_path FROM files WHERE file_id = ?", [file_id])
+        self.c.execute("SELECT path FROM files WHERE file_id = ?", [file_id])
         return self.c.fetchone()[0]
 
     def get_auto_import_id_by_path(self, path: str):
