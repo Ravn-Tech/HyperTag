@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from pathlib import Path
 import json
 import threading
@@ -8,6 +9,8 @@ import rpyc  # type: ignore
 from rpyc.utils.server import ThreadedServer  # type: ignore
 from fastapi import FastAPI
 import uvicorn
+import subprocess
+from pathlib import Path
 from watchdog.observers import Observer  # type: ignore
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from .hypertag import HyperTag
@@ -26,6 +29,22 @@ image_vectorizer = None
 @app.get("/tags")
 async def tags():
     return {"tags": ht.show(mode="tags", path=False, print=False)}
+
+@app.get("/open/{filename}")
+async def open(filename: str):
+    file_id = ht.db.get_file_id_by_name(filename)
+    filepath = Path(ht.db.get_file_path_by_id(file_id)) # convert to path and strip whitespace
+
+    # Open the file
+    if sys.platform.startswith('darwin'): # macosx
+        subprocess.call(('open', filepath))
+    elif os.name == 'nt': # windows
+        os.startfile(filepath)
+    elif os.name == 'posix': # linux
+        subprocess.call(('xdg-open', filepath))
+    print("Opening", filepath, ".:.")
+
+    return {"status": "OK", "path": str(filepath)}
 
 def get_service_name(): return "HyperTag - WebAPI Service"
 
