@@ -26,6 +26,10 @@ text_vectorizer = None
 image_vectorizer = None
 
 
+@app.get("/files")
+async def files():
+    return {"files": ht.show(mode="files", path=False, print_=False)}
+
 @app.get("/tags")
 async def tags():
     return {"tags": ht.show(mode="tags", path=False, print=False)}
