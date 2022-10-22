@@ -32,7 +32,7 @@ async def files():
 
 @app.get("/tags")
 async def tags():
-    return {"tags": ht.show(mode="tags", path=False, print=False)}
+    return {"tags": ht.show(mode="tags", path=False, print_=False)}
 
 @app.get("/open/{filename}")
 async def open(filename: str):
