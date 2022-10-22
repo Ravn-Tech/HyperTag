@@ -1,0 +1,135 @@
+/* CSS for neofiles.html */
+
+body {background-color:#e5e5e5; margin:0 auto; font-family:helvetica;}
+
+#top {width:100%; height:40px; background-color:#010742; color:#ffffff;}/*0CBB18,340C90,396fc6 */
+#top_left {width:60%; float:left;}
+#top_left {width:40%; float:left;}
+#clear {clear:both;}
+
+#close_btn {float:right; width:50px; height:40px; background-color: #992316; color:#ffffff;}
+#minMax_btn {float:right; width:50px; height:40px; background-color: #396fc6; color:#ffffff;}
+
+#main {width:100%;}
+#main_left {width:30%; float:left; background-color:#d1d1d1; height:94%; margin-top:0px; border-right:1px solid; border-right-color:#bcbcbc;}
+#main_right {width:69.8%; float:left; height:92%; margin-top:0px;}
+
+#main_right_content {}
+#searchResults1 {width:100%; height:29px; background-color:#d6d6d6; border-top: 2px solid; border-top-color:#919191; cursor: pointer;}
+#searchResults1:hover {background-color:rgba(102, 102, 255, 0.5);}
+#searchResults1_left {float:left; width:30%;}
+#searchResults1_right {float:left; width:70%;}
+
+#NeoTagBox {width:98%; height:35px; background-color: #dbdbdb; border-right:3px solid; border-right-color:#7a7a7a; margin-top:3px;}
+#NeoTagBox:hover {border-right-color:#0b8ce8;}
+
+.logo-top {padding:5px; margin-left:1px;}
+.top-left-menu {display: inline-block; margin-top: -30px; margin-left:28px; color:#ffffff; }
+.file-search-bar {width:98%; height:30px; background-color: #e5e5e5; border:1px solid; border-color:#707070; margin-top:2px; margin-left: 3px; color: #4c4c4c;}
+.file-search-bar:hover {border-color:#0b8ce8;}
+
+.searchResults_icon {margin-top:5px; margin-left:10px;}
+.searchResults1_resultTitle {color:#333333; font-weight:bold; font-size:18px; display: inline-block; margin-top:3px; float:left; padding-left: 3px; padding-right: 10px;}
+.searchResults1_resultKeywords {color:#333333; font-weight:bold; font-size:14px; display:inline-block; margin-top:10px;}
+
+.main_left_suggestionsTitle {padding: 5px; display: inline-block; margin-top:8px; margin-bottom: 8px; font-size:14px; color:#333333; font-weight: bold;}
+.NeoTagBox_string {display:inline-block; padding:15px; color:#333333; font-size:12px; font-weight: bold;}
+
+/* --------------NeoTags Section------------ */
+
+#neoTagArea {
+	width:100%;
+	margin-top:2px;
+
+}
+
+#neoTag {
+	width:91px;
+	height:24px;
+    background-color:#7a7a7a;
+	border-radius:4px;
+	float:left;
+}
+
+#neoTag:hover{
+    background-color:rgba(102, 0, 255, 0.35);
+}
+
+#neoTagWrapper {
+	padding:5px;
+	margin-left:5px;
+	color:#ffffff;
+	font-size:11px;
+}
+
+#deleThisTag{
+	display:none;
+	float:left;
+	font-weight:bold;
+	margin-left:5px;
+}
+
+#neoTagWrapperContent {
+	float:left;
+}
+
+#addMoreTags {
+	width:25px;
+	height:25px;
+	background-color:#b2b2b2;
+	border-radius:100px;
+	float:left;
+	margin-left:10px;
+	text-align:center;
+    cursor: pointer;
+}
+
+#addMoreTagsWrapper {
+	color:#ffffff;
+	font-size:20px;
+	margin-top:0px;
+	margin-left:0px;
+}
+
+#addMoreTags:hover{
+	background-color:rgba(102, 0, 255, 0.35);
+}
+
+
+/* --------------Tabs Section------------ */
+/* Style the tab */
+div.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+/* Style the links inside the tab */
+div.tab a {
+    float: left;
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+/* Change background color of links on hover */
+div.tab a:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+div.tab a:focus, .active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
