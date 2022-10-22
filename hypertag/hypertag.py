@@ -9,7 +9,7 @@ from pathlib import Path
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 import rpyc  # type: ignore
-from pywebcopy import WebPage, config  # type: ignore
+#from pywebcopy import WebPage, config  # type: ignore
 from .persistor import Persistor
 from .graph import graph
 from .utils import remove_dir, remove_symlink, download_url
@@ -398,7 +398,7 @@ class HyperTag:
         for tag in tags:
             print(tag)
 
-    def show(self, mode="tags", path=False):
+    def show(self, mode="tags", path=False, print=True):
         """ Display all tags (default), indexed files (mode=index) or files """
         if mode == "files":
             names = self.db.get_files(path)
@@ -406,8 +406,11 @@ class HyperTag:
             names = self.db.get_vectorized_file_paths(path)
         elif mode == "tags":
             names = self.db.get_tags()
-        for name in names:
-            print(name)
+        if print:
+            for name in names:
+                print(name)
+        else:
+            return names
 
     def query(self, *query, path=False, fuzzy=True, verbose=False):
         """Query files using set operands.
