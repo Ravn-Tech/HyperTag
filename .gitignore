@@ -9,3 +9,4 @@ HyperTagFS/*
 **/__pycache__/**
 migrate.sql
 **/.DS_Store
+**/node_modules
