@@ -398,7 +398,7 @@ class HyperTag:
         for tag in tags:
             print(tag)
 
-    def show(self, mode="tags", path=False, print=True):
+    def show(self, mode="tags", path=False, print_=True):
         """ Display all tags (default), indexed files (mode=index) or files """
         if mode == "files":
             names = self.db.get_files(path)
@@ -406,7 +406,7 @@ class HyperTag:
             names = self.db.get_vectorized_file_paths(path)
         elif mode == "tags":
             names = self.db.get_tags()
-        if print:
+        if print_:
             for name in names:
                 print(name)
         else:
