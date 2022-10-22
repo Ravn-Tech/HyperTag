@@ -8,3 +8,4 @@ HyperTagFS/*
 .ipynb_checkpoints/*
 **/__pycache__/**
 migrate.sql
+**/.DS_Store
