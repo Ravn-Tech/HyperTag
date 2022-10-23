@@ -415,12 +415,16 @@ class Persistor:
         data = [str(e[0]) for e in self.c.fetchall()]
         return data
 
-    def get_files(self, show_path):
+    def get_files(self, show_path, include_id=False):
+        q_suffix = ", file_id FROM files" if include_id else " FROM files"
         if show_path:
-            self.c.execute("SELECT path FROM files")
+            self.c.execute("SELECT path"+q_suffix)
         else:
-            self.c.execute("SELECT name FROM files")
-        data = [e[0] for e in self.c.fetchall()]
+            self.c.execute("SELECT name"+q_suffix)
+        if include_id:
+            data = self.c.fetchall()
+        else:
+            data = [e[0] for e in self.c.fetchall()]
         return data
 
     def add_tag_to_file(self, tag_name_or_id: str, file_name_or_path: str, value=None):
@@ -482,6 +486,10 @@ class Persistor:
 
     def get_file_id_by_name(self, name: str):
         self.c.execute("SELECT file_id FROM files WHERE name LIKE ?", [name])
+        return self.c.fetchone()[0]
+
+    def get_file_name_by_id(self, file_id: int):
+        self.c.execute("SELECT name FROM files WHERE file_id = ?", [int(file_id)])
         return self.c.fetchone()[0]
 
     def get_file_path_by_id(self, file_id: int):

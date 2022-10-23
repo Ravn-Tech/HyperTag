@@ -8,6 +8,7 @@ import torch
 import rpyc  # type: ignore
 from rpyc.utils.server import ThreadedServer  # type: ignore
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import subprocess
 from pathlib import Path
@@ -25,18 +26,24 @@ ht = HyperTag()
 text_vectorizer = None
 image_vectorizer = None
 
+app.mount("/site", StaticFiles(directory="./hypertag/client", html = True), name="site")
+
+
+@app.get("/get_file_name/{fileid}")
+async def get_file_name(fileid: int):
+    name = ht.db.get_file_name_by_id(fileid)
+    return name
 
 @app.get("/files")
 async def files():
-    return {"files": ht.show(mode="files", path=False, print_=False)}
+    return {"files": [[x,y] for y,x in ht.db.get_files(False, True)]}
 
 @app.get("/tags")
 async def tags():
     return {"tags": ht.show(mode="tags", path=False, print_=False)}
 
-@app.get("/open/{filename}")
-async def open(filename: str):
-    file_id = ht.db.get_file_id_by_name(filename)
+@app.get("/open/{file_id}")
+async def open(file_id: int):
     filepath = Path(ht.db.get_file_path_by_id(file_id)) # convert to path and strip whitespace
 
     # Open the file

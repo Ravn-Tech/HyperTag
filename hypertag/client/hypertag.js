@@ -1,82 +1,225 @@
-<!-- NeoVerse: NeoFiles the main window -->
+// Author: Sean Pedersen
+//var nodeConsole = require('console');
+function html_template(templateid, data){
+  return document.getElementById( templateid ).innerHTML
+    .replace(
+      /{{(\w*)}}/g, // or /{(\w*)}/g for "{this} instead of %this%"
+      function( m, key ){
+        return data.hasOwnProperty( key ) ? data[ key ] : "";
+      }
+    );
+}
+//var myConsole = new nodeConsole.Console(process.stdout, process.stderr);
 
-<html>
-<head>
-  <link rel="stylesheet" type="text/css" href="../css/neofiles.css">
-  <title>NeoVerse: NeoFiles (Pre-Alpha)</title>
-</head>
-<body>
+// call local python flask server backend api
+function call_python(function_text, callback){
+  const request = new Request("http://localhost:23232/"+function_text);
+  const options = {
+    method: "GET",
+    headers: new Headers({'content-type': 'application/json'}),
+    mode: 'no-cors'
+  };
+  fetch(request, options)
+    .then((response) => response.json())
+    .then((blob) => {
+      console.log("TEXT", blob)
+      callback(blob);
+    });
+}
 
-  <div id="top">
-    <div id="top_left">
-        <div id="img_con">
-            <img src="../img/logo.png" width=30 class="logo-top"/>
-        </div>
-        <div id="menu_con" class="top-left-menu">
-            <span class="top-left-menu" style="cursor: pointer;" onclick="alert('Settings')">Settings</span>
-            <span class="top-left-menu" style="cursor: pointer;" onclick="alert('About: NeoVerse - Made in Hamburg, Germany\nLead Dev: Sean Pedersen\nUI Design: Kian Shahriyari')">About</span>
-        </div>
-    </div>
-  </div>
-<div id="clear"></div>
-<div id="main">
-<div id="main_left">
-  <input id="neosearchbar" type="text" class="file-search-bar" placeholder=" Search" onfocus="this.select();" onkeypress="handle(event)"/>
-<!-- TabView -->
-  <div class="tab">
-    <a id="defaultOpen" href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'all')"><img src="../img/eye.svg" width=18/>All</a>
-    <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'favorites')"><img src="../img/heart.svg" width=18/>Favs</a>
-    <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'history')"><img src="../img/clock.svg" width=18/>History</a>
-  </div>
+// Mouse Click event for neofileboxes
+function click_neofilebox(e){
+  console.log("CLICK ID:", e.parentNode.file_id)
+    call_python("open/"+e.parentNode.file_id, function(body){  });
+}
 
-  <div id="all" class="tabcontent">
-    <p>Display all saved NeoTags below and show all files.</p>
-  </div>
+// NeoSearchBar -- Event for Enter-Key pressed (start search)
+function handle(e){
+    if(e.keyCode === 13){
+        e.preventDefault(); // Ensure it is only this code that runs
+        search();
+    }
+}
 
-  <div id="favorites" class="tabcontent">
-    <p>Display favorite NeoTags, determine by most used etc.</p>
-  </div>
+function search(){
+    let word = document.getElementById("neosearchbar").value;
+    if (word == "")
+    {document.getElementById("defaultOpen").click();}
+    else {
+        // add neotagbox (history element)
+        let data = {
+            title: word
+        }
+        let html = html_template("neotagbox-template", data);
+        let neotagbox = document.createElement("div");
+        neotagbox.innerHTML = html;
+        document.getElementById("history").appendChild(neotagbox);
 
-  <div id="history" class="tabcontent">
-      <p>Display search history.</p>
-  </div>
-</div>
+        // remove / or \ for successful browser transmission
+        // differentiate between unix (/) and windows (\) paths
+        if (word.includes("/"))
+        {word = word.split('/').join("$");}
+        else {
+          word = word.split('\\').join("$");
+        }
+        word = word.replace("#", "=")
+        // call python backend to get query results
+        call_python("search/"+word, function(body){
+            file_ids = eval(body);
+            // render results
+            document.getElementById("main_right_content").innerHTML = "";
+            for (var i = 0, len = file_ids.length; i < len; i++) {
+                addNeoFileDOM(file_ids[i]);
+            }
+        });
+    }
+}
 
-<div id="main_right">
-  <div id="main_right_content">
-  </div>
-</div>
-<div id="clear"></div>
-</div>
+// drag N drop file/s
+const holder = document.getElementById('main_right')
 
-<script src="../neofiles.js"></script>
-<!-- mustache template for a neofile_box (used in neofiles.js) -->
-<script id="neofile-template" type="text/html">
-    <div id="searchResults1" ondblclick="click_neofilebox(this)">
-      <div id="searchResults1_left">
-        <!--<img src="../img/Excel-icon.png" width=55 class="searchResults_icon"/> -->
-      </div>
-      <div id="searchResults1_right">
-          <span id="neofile_title" onmouseleave="if(this.textContent.length>18){this.textContent = this.textContent.substring(0,18)+'...';}" onmouseenter="this.textContent = (this.parentNode.parentNode.parentNode.file_title);" class="searchResults1_resultTitle">{{title}}</span>
-          <div id="neoTagArea">
-              <div id="addMoreTags" onclick="alert(this.parentNode.parentNode.parentNode.parentNode.file_id)"><div id="addMoreTagsWrapper">+</div></div>
-          </div>
-      </div>
-  </div>
-</script>
-<!-- mustache template for a neotag (used in neofiles.js) -->
-<script id="neotag-template" type="text/html">
-    <div id="neoTag" onmouseover="this.children[0].children[1].style.display = 'block';" onmouseout="this.children[0].children[1].style.display = 'none';">
-        <div id="neoTagWrapper">
-            <div id="neoTagWrapperContent" style="float:left;">{{tag_name}}</div>
-            <div id="deleThisTag" style="float:right;" onclick="alert('del this')">X</div>
-        </div>
-    </div>
-</script>
-<!-- mustache template for a neotag_box (used in neofiles.js) -->
-<script id="neotagbox-template" type="text/html">
-    <div id="NeoTagBox"><span class="NeoTagBox_string">{{title}}</span></div>
-</script>
+holder.ondragover = () => {
+  return false;
+}
+holder.ondragleave = holder.ondragend = () => {
+  return false;
+}
+// display file box and add file to NeoDB; upload to Cloud
+holder.ondrop = (e) => {
+  e.preventDefault();
 
-</body>
-</html>
+  for (let f of e.dataTransfer.files) {
+      //myConsole.log('File(s) dragged here: ', f.path);
+      // remove / or \ for successful browser transmission
+      // differentiate between unix (/) and windows (\) paths
+      if (f.path.includes("/"))
+      {filepath = f.path.split('/').join("$");}
+      else {
+        filepath = f.path.split('\\').join("$");
+      }
+      // extract file name
+      let file_title;
+      if (f.path.includes("/"))
+      {  file_title = f.path.split('/')[f.path.split('/').length-1]; }
+      else {
+        file_title = f.path.split('\\')[f.path.split('\\').length-1];
+      }
+      // call python backend
+      call_python("addfile/"+filepath, function(file_id){
+          if(file_id == "None"){ alert(file_title + " already indexed."); }
+          else if(file_id == "DIR") { alert("Folders are currently not supported."); }
+          else {
+              addNeoFileDOM(file_id)
+          }
+       });
+  }
+  return false;
+}
+
+function addNeoFileDOM(file_id){
+    call_python("get_file_name/"+file_id, function(body){
+        file_title = body[0];
+        file_suffix = body.split("/")[1]; // TODO: Fix use length - 1
+        file_title = body;
+        // prevent too long file_titles from getting rendered -> destorying UI
+        if (file_title.length > 18)
+        {
+            display_file_title = file_title.substring(0, 18)+"...";
+        }
+        else {
+            display_file_title = file_title;
+        }
+        // data/vars to render
+        let data = {
+            title: display_file_title,
+        }
+        // access template for neofileboxes defined in neofiles.html
+        // example: http://jsfiddle.net/bu5Av/2/
+        let html = html_template("neofile-template", data);
+        //let html = data;
+        let neofile_box = document.createElement("div");
+        neofile_box.innerHTML = html;
+       // neofile_box.filepath = f.path;
+        //neofile_box.tags = data["tags"];
+        neofile_box.file_id = file_id;// save file_id as property of the DOM object
+        neofile_box.file_title = file_title;
+        neofile_box.file_suffix = file_suffix;
+        // add neotag/s
+        call_python("get_file_tags/"+file_id, function(tags_body){
+        let file_tags = eval(tags_body);
+        //alert(file_tags);
+
+        for (let i = 0, len = file_tags.length; i < len; i++) {
+            //alert(file_id + " " + file_tags[i]);
+            tag_data = {
+                tag_name: file_tags[i]
+            }
+            tag_html = html_template("neotag-template", tag_data);
+            let neotag = document.createElement("div");
+            neotag.innerHTML = tag_html;
+            neofile_box.children[0].children[1].children[1].appendChild(neotag);
+        }
+
+    });
+        // add neofile_box
+        document.getElementById("main_right_content").appendChild(neofile_box);
+    });
+}
+
+// Tabs for NeoTags overview (All/Favorites/History) @source: https://www.w3schools.com/howto/howto_js_tabs.asp
+function openTab(evt, tabName) {
+    if (tabName == "all"){
+        // display all NeoFiles
+        call_python("files", function(files){
+            console.log("FILES", files);
+            let files_array = eval(files.files); // convert array (string) to JS-array
+            document.getElementById("main_right_content").innerHTML = "";
+            for (var i = 0, len = files_array.length; i < len; i++) {
+                //alert(files_array[i]);
+                addNeoFileDOM(files_array[i][0]);
+            }
+        });
+        // display all NeoTags
+        call_python("tags", function(tags){
+            let tags_array = eval(tags.tags);
+            document.getElementById("all").innerHTML = "";
+            for (var i = 0, len = tags_array.length; i < len; i++) {
+                tag_data = {
+                    tag_name: tags_array[i]
+                }
+                tag_html = html_template("neotag-template", tag_data);
+                let neotag = document.createElement("div");
+                neotag.innerHTML = tag_html;
+                document.getElementById("all").appendChild(neotag);
+            }
+        });
+    }
+    // Declare all variables
+    var i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the link that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+// prevent drag/drop of files being loaded by default
+document.addEventListener('dragover', event => event.preventDefault())
+document.addEventListener('drop', event => event.preventDefault())
+
+// run start up routine
+document.addEventListener("DOMContentLoaded", function() {
+    call_python("start", function(body){  });
+    document.getElementById("defaultOpen").click();// open default tab
+});
