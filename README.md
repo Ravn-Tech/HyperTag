@@ -50,7 +50,7 @@ Reach me via Twitter @SeanPedersen96
 ## Overview
 HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
 
-**NeoVerse WebApp Client**: A slick HTML+JS client. Visualize, structure and search your personal NeoVerse in seconds using web technologies.
+**NeoVerse WebApp**: A slick HTML+JS client. Visualize, structure and search your personal NeoVerse in seconds powered by the HyperTag engine.
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
 
