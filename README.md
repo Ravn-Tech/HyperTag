@@ -14,7 +14,7 @@ Accompanying blog post: https://blog.neotree.uber.space/posts/hypertag-file-orga
   - [Community](#community)
   - [Overview](#overview)
   - [CLI Functions](#cli-functions)
-    - [WebApp Client](#webapp-client)
+    - [NeoVerse (WebApp)](#neoverse-webapp)
     - [Import existing directory recursively](#import-existing-directory-recursively)
     - [Add file/s or URL/s manually](#add-files-or-urls-manually)
     - [Tag file/s  (with values)](#tag-files--with-values)
@@ -68,7 +68,7 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 ## CLI Functions
 
-### WebApp Client
+### NeoVerse (WebApp)
 Spawn HTTP server for the client (called NeoVerse) running on localhost:23232
 
 ```$ python3 -m hypertag.webapi```
