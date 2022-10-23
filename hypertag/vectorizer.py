@@ -279,7 +279,7 @@ class TextVectorizer:
     def get_text_corpus(self):
         # Returns text paths and embedding vectors
         with Persistor() as db:
-            text_files = db.get_files(show_path=True)
+            text_files = [fp for _id, fp in db.get_files(show_path=True, include_id=True)]
         text_document_tuples = get_text_documents(text_files)
         text_document_paths = [path for path, _file_type in text_document_tuples]
         with Persistor() as db:
