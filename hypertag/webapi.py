@@ -42,6 +42,19 @@ async def files():
 async def tags():
     return {"tags": ht.show(mode="tags", path=False, print_=False)}
 
+@app.get("/find/{query}")
+async def open(query: str):
+    query = str(query.replace("$", "/").strip())
+    print("FIND:", query)
+    # search for file_names containing the query
+    if query.startswith('"') and query.endswith('"'):
+        query = query[1:len(query)-1] # removes ""
+        results = ht.db.get_files_by_name(query)#.get_files(show_path=True, include_id=True)
+        print(results)
+        return {"results": results}
+    else:
+        return {"results": []}
+
 @app.get("/open/{file_id}")
 async def open(file_id: int):
     filepath = Path(ht.db.get_file_path_by_id(file_id)) # convert to path and strip whitespace

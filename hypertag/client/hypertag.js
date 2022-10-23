@@ -13,6 +13,7 @@ function html_template(templateid, data){
 
 // call local python flask server backend api
 function call_python(function_text, callback){
+  console.log("CALLING", function_text)
   const request = new Request("http://localhost:23232/"+function_text);
   const options = {
     method: "GET",
@@ -64,12 +65,15 @@ function search(){
         }
         word = word.replace("#", "=")
         // call python backend to get query results
-        call_python("search/"+word, function(body){
-            file_ids = eval(body);
+        call_python("find/"+word, function(body){
+            let results = body.results
+            console.log("RESULTS", results)
+            file_ids = eval(results);
             // render results
             document.getElementById("main_right_content").innerHTML = "";
             for (var i = 0, len = file_ids.length; i < len; i++) {
-                addNeoFileDOM(file_ids[i]);
+                console.log("FILE ID", file_ids[i])
+                addNeoFileDOM(file_ids[i][0]);
             }
         });
     }
@@ -118,8 +122,8 @@ holder.ondrop = (e) => {
 
 function addNeoFileDOM(file_id){
     call_python("get_file_name/"+file_id, function(body){
-        file_title = body[0];
-        file_suffix = body.split("/")[1]; // TODO: Fix use length - 1
+        console.log("BODY", body)
+        file_suffix = body[0].split("/")[1]; // TODO: Fix use length - 1
         file_title = body;
         // prevent too long file_titles from getting rendered -> destorying UI
         if (file_title.length > 18)
