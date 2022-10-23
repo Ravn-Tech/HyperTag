@@ -680,6 +680,21 @@ class Persistor:
         data = [self.get_tag_name_by_id(e[0]) for e in self.c.fetchall()]
         return data
 
+    def get_tags_by_file_id(self, file_id):
+        self.c.execute(
+            """
+            SELECT t.name
+            FROM tags as t, tags_files as tf, files as f
+            WHERE
+                t.tag_id = tf.tag_id AND
+                tf.file_id = f.file_id AND
+                f.file_id = ?
+            """,
+            (file_id,),
+        )
+        data = [e[0] for e in self.c.fetchall()]
+        return data
+
     def get_tags_by_file_name(self, file_name):
         self.c.execute(
             """

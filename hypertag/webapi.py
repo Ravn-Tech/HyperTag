@@ -43,6 +43,10 @@ async def files():
 async def tags():
     return {"tags": ht.show(mode="tags", path=False, print_=False)}
 
+@app.get("/get_tags/{file_id}")
+async def open(file_id: int):
+    return {"tags": ht.db.get_tags_by_file_id(file_id)}
+
 @app.get("/find/{query}")
 async def open(query: str):
     query = str(query.replace("$", "/").strip())

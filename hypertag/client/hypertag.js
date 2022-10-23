@@ -34,6 +34,10 @@ function click_neofilebox(e){
     call_python("open/"+e.parentNode.file_id, function(body){  });
 }
 
+function add_neotags_to_file(file) {
+
+}
+
 // NeoSearchBar -- Event for Enter-Key pressed (start search)
 function handle(e){
     if(e.keyCode === 13){
@@ -149,8 +153,8 @@ function addNeoFileDOM(file_id){
         neofile_box.file_title = file_title;
         neofile_box.file_suffix = file_suffix;
         // add neotag/s
-        call_python("get_file_tags/"+file_id, function(tags_body){
-        let file_tags = eval(tags_body);
+        call_python("get_tags/"+file_id, function(tags_body){
+        let file_tags = eval(tags_body.tags);
         //alert(file_tags);
 
         for (let i = 0, len = file_tags.length; i < len; i++) {
