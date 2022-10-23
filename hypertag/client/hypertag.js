@@ -45,7 +45,7 @@ function handle(e){
 function search(){
     let word = document.getElementById("neosearchbar").value;
     if (word == "")
-    {document.getElementById("defaultOpen").click();}
+    {openTab(null, "all")}
     else {
         // add neotagbox (history element)
         let data = {
@@ -122,9 +122,9 @@ holder.ondrop = (e) => {
 
 function addNeoFileDOM(file_id){
     call_python("get_file_name/"+file_id, function(body){
-        console.log("BODY", body)
-        file_suffix = body[0].split("/")[1]; // TODO: Fix use length - 1
-        file_title = body;
+        console.log("File NAME", body.result)
+        file_suffix = body.result.split("/")[1]; // TODO: Fix use length - 1
+        file_title = body.result;
         // prevent too long file_titles from getting rendered -> destorying UI
         if (file_title.length > 18)
         {
@@ -180,7 +180,7 @@ function openTab(evt, tabName) {
             document.getElementById("main_right_content").innerHTML = "";
             for (var i = 0, len = files_array.length; i < len; i++) {
                 //alert(files_array[i]);
-                addNeoFileDOM(files_array[i][0]);
+                addNeoFileDOM(files_array[i][1]);
             }
         });
         // display all NeoTags

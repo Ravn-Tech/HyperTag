@@ -32,7 +32,8 @@ app.mount("/site", StaticFiles(directory="./hypertag/client", html = True), name
 @app.get("/get_file_name/{fileid}")
 async def get_file_name(fileid: int):
     name = ht.db.get_file_name_by_id(fileid)
-    return name
+    print("FILENAME", name)
+    return {"result": name}
 
 @app.get("/files")
 async def files():
