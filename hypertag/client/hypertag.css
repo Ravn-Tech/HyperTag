@@ -24,7 +24,7 @@ body {background-color:#e5e5e5; margin:0 auto; font-family:helvetica;}
 #NeoTagBox:hover {border-right-color:#0b8ce8;}
 
 .logo-top {padding:5px; margin-left:1px;}
-.top-left-menu {display: inline-block; margin-top: -30px; margin-left:28px; color:#ffffff; }
+.top-left-menu {display: inline-block; margin-top: -25px; margin-left:28px; color:#ffffff; }
 .file-search-bar {width:98%; height:30px; background-color: #e5e5e5; border:1px solid; border-color:#707070; margin-top:2px; margin-left: 3px; color: #4c4c4c;}
 .file-search-bar:hover {border-color:#0b8ce8;}
 
