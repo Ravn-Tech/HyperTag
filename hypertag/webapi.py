@@ -51,14 +51,22 @@ async def open(file_id: int):
 async def open(query: str):
     query = str(query.replace("$", "/").strip())
     print("FIND:", query)
-    # search for file_names containing the query
+    
     if query.startswith('"') and query.endswith('"'):
+        # search for file_names containing the query
         query = query[1:len(query)-1] # removes ""
         results = ht.db.get_files_by_name(query)#.get_files(show_path=True, include_id=True)
-        print(results)
-        return {"results": results}
+    elif query.startswith('='):
+        # Tag Search
+        query = query.replace("=", "")
+        query_list = query.split(" ")
+        print("QLIST", query_list)
+        results = list([ht.db.get_file_id_by_name(fname), fname] for fname in ht.query(query_list[0], *tuple(query_list[1:])))
     else:
-        return {"results": []}
+        results = []
+
+    print(results)
+    return {"results": results}
 
 @app.get("/open/{file_id}")
 async def open(file_id: int):

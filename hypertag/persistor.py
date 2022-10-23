@@ -752,7 +752,7 @@ class Persistor:
             for match, ratio in matches:
                 length_dist = abs(len(match) - len(tag_name)) + 1
                 length_overlap = len(set(tag_name).intersection(match))
-                dist = ((length_dist ** 0.5) / ((length_overlap + 1) ** 3)) / ratio
+                dist = ((length_dist ** 0.5) / ((length_overlap + 1) ** 3)) / (0.0001+ratio)
                 if dist < best_dist:
                     best_dist = dist
                     best_match = match, ratio

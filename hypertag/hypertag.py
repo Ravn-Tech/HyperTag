@@ -420,6 +420,7 @@ class HyperTag:
         minus (difference)
         """
         # TODO: Parse AST to support queries with brackets
+        print("PARAQ", query)
         operands = {"and", "or", "minus"}
         tag_val = query[0].split("=")
         if len(tag_val) == 1:
