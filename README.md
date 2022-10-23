@@ -14,6 +14,7 @@ Accompanying blog post: https://blog.neotree.uber.space/posts/hypertag-file-orga
   - [Community](#community)
   - [Overview](#overview)
   - [CLI Functions](#cli-functions)
+    - [WebApp Client](#webapp-client)
     - [Import existing directory recursively](#import-existing-directory-recursively)
     - [Add file/s or URL/s manually](#add-files-or-urls-manually)
     - [Tag file/s  (with values)](#tag-files--with-values)
@@ -44,10 +45,12 @@ Available on [PyPI](https://pypi.org/project/hypertag/)
 `$ pip install hypertag` (supports both CPU only & CUDA accelerated execution!)
 
 ## Community
-Join the HyperTag [matrix chat room](https://matrix.to/#/#hypertag:matrix.neotree.uber.space?via=matrix.neotree.uber.space) to stay up to date on the latest developments or to ask for help.
+Reach me via Twitter @SeanPedersen96
 
 ## Overview
 HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
+
+**NeoVerse WebApp Client**: A slick HTML+JS client. Visualize, structure and search your personal NeoVerse in seconds using web technologies.
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
 
@@ -64,6 +67,11 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 ![HyperTag Graph Example](https://raw.githubusercontent.com/SeanPedersen/HyperTag/master/images/hypertag-graph.jpg)
 
 ## CLI Functions
+
+### WebApp Client
+Spawn HTTP server for the client (called NeoVerse) running on localhost:23232
+
+```$ python3 -m hypertag.webapi```
 
 ### Import existing directory recursively
 Import files with tags inferred from the existing directory hierarchy.
