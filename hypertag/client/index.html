@@ -50,7 +50,7 @@
 </div>
 
 <script src="./hypertag.js"></script>
-<!-- mustache template for a neofile_box (used in hypertag.js) -->
+<!-- template for a neofile_box (used in hypertag.js) -->
 <script id="neofile-template" type="text/html">
     <div id="searchResults1" ondblclick="click_neofilebox(this)">
       <div id="searchResults1_left">
@@ -59,12 +59,12 @@
       <div id="searchResults1_right">
           <span id="neofile_title" onmouseleave="if(this.textContent.length>18){this.textContent = this.textContent.substring(0,18)+'...';}" onmouseenter="this.textContent = (this.parentNode.parentNode.parentNode.file_title);" class="searchResults1_resultTitle">{{title}}</span>
           <div id="neoTagArea">
-              <div id="addMoreTags" onclick="alert(this.parentNode.parentNode.parentNode.parentNode.file_id)"><div id="addMoreTagsWrapper">+</div></div>
+              <div id="addMoreTags" onclick="add_neotags_to_file(this)"><div id="addMoreTagsWrapper">+</div></div>
           </div>
       </div>
   </div>
 </script>
-<!-- mustache template for a neotag (used in hypertag.js) -->
+<!-- template for a neotag (used in hypertag.js) -->
 <script id="neotag-template" type="text/html">
     <div id="neoTag" onclick="document.getElementById('neosearchbar').value= '#'+this.children.neoTagWrapper.children.neoTagWrapperContent.innerHTML;" onmouseover="this.children[0].children[1].style.display = 'block';" onmouseout="this.children[0].children[1].style.display = 'none';">
         <div id="neoTagWrapper">
@@ -73,7 +73,7 @@
         </div>
     </div>
 </script>
-<!-- mustache template for a neotag_box (used in hypertag.js) -->
+<!-- template for a neotag_box (used in hypertag.js) -->
 <script id="neotagbox-template" type="text/html">
     <div id="NeoTagBox"><span class="NeoTagBox_string">{{title}}</span></div>
 </script>

@@ -44,7 +44,15 @@ async def tags():
     return {"tags": ht.show(mode="tags", path=False, print_=False)}
 
 @app.get("/get_tags/{file_id}")
-async def open(file_id: int):
+async def get_tags(file_id: int):
+    return {"tags": ht.db.get_tags_by_file_id(file_id)}
+
+@app.get("/add_tags/{file_id}/{tag_string}")
+async def add_tags(file_id: int, tag_string: str):
+    print("Adding", tag_string, "to", file_id)
+    for tag in tag_string.split(","):
+        clean_tag = tag.strip()
+        ht.db.add_tag_to_file_id(clean_tag, file_id)
     return {"tags": ht.db.get_tags_by_file_id(file_id)}
 
 @app.get("/find/{query}")
@@ -112,7 +120,7 @@ def start(cpu, text, image):
 
     # HTTP
     port = 23232
-    print("Starting UVICORN HTTP Server.:.")
+    print("Starting UVICORN HTTP Server .:. on Port:", port, "\nDomain-Dir: /site")
     uvicorn.run(app, host="0.0.0.0", port=port)
 
 

@@ -442,6 +442,14 @@ class Persistor:
         else:
             file_id = self.get_file_id_by_name(file_name_or_path)
 
+        self.add_tag_to_file_id(tag_id, file_id, value)
+    
+    def add_tag_to_file_id(self, tag_name_or_id, file_id, value=None):
+        if is_int(tag_name_or_id):
+            tag_id = int(tag_name_or_id)
+        else:
+            tag_id = self.add_tag(tag_name_or_id)
+
         self.c.execute(
             """
             INSERT OR IGNORE INTO tags_files(

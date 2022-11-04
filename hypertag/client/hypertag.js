@@ -34,9 +34,31 @@ function click_neofilebox(e){
     call_python("open/"+e.parentNode.file_id, function(body){  });
 }
 
-function add_neotags_to_file(file) {
+function add_neotags_to_file(element) {
+    let file_id = element.parentNode.parentNode.parentNode.parentNode.file_id;
+    let input = document.createElement('input');
+    input.id = "newtagstext"+String(file_id)
+    input.type = 'text';
+    element.parentNode.appendChild(input);
 
+    let button = document.createElement('button');
+    button.id = "addneotagbutton"+String(file_id)
+    button.type = 'button';
+    button.textContent = "ADD";
+    element.parentNode.appendChild(button);
+
+    input = document.getElementById(input.id)
+    button = document.getElementById(button.id)
+    button.onclick = add_neotags;
+
+    function add_neotags() {
+        // TODO: add API add tag to file by id end point
+        call_python("add_tags/"+String(file_id)+"/"+String(input.value), function(body){  });
+        console.log("ADDING:"+String(file_id) + " " + input.value)
+    }
 }
+
+
 
 // NeoSearchBar -- Event for Enter-Key pressed (start search)
 function handle(e){
