@@ -120,7 +120,7 @@ def start(cpu, text, image):
 
     # HTTP
     port = 23232
-    print("Starting UVICORN HTTP Server .:. on Port:", port, "\nDomain-Dir: /site")
+    print("Starting UVICORN HTTP Server .:. on Port:", port, "\nDomain-Dir: http://localhost:23232/site/")
     uvicorn.run(app, host="0.0.0.0", port=port)
 
 
