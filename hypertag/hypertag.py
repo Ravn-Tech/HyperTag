@@ -91,7 +91,6 @@ class HyperTag:
 
     def index_texts(self, rebuild=False, cache=False, cores: int = 0):
         """ Vectorize text files (needed for semantic search) """
-        # TODO: index images
         # TODO: auto index on file addition (import)
         from .vectorizer import TextVectorizer, extract_clean_text, get_text_documents
 
