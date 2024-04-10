@@ -83,7 +83,7 @@ class HyperTag:
 
             self.db.add_file_embedding_vector(file_path, json.dumps(img_vector))
             self.db.conn.commit()
-        print("Updating index...")
+        print("Updating image index...")
         if remote:
             rpc.root.update_image_index()
         else:
@@ -157,7 +157,7 @@ class HyperTag:
                 self.db.conn.commit()
                 print("Failed to parse file - skipping:", file_path)
         print(f"Vectorized {str(i)} file/s successfully")
-        print("Updating index...")
+        print("Updating text index...")
         if remote:
             rpc.root.update_text_index()
         else:
