@@ -214,7 +214,7 @@ class HyperTag:
             if not _return:
                 for result in results:
                     print(result)
-            if len(result) == 0:
+            if len(results) == 0:
                 print("No relevant files indexed...")
         except (ConnectionRefusedError, RuntimeError):
             from .vectorizer import TextVectorizer
