@@ -497,7 +497,7 @@ def get_pypdf_text(file_path: Union[Path, str]) -> str:
                     print("Stopping to parse after 42 failed pages...")
                     return ""
                 parsed += 1
-                text += " " + page.extractText()
+                text += " " + page.extract_text()
             except Exception:
                 # print("failed to parse page", parsed)
                 failed += 1
