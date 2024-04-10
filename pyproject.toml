@@ -16,7 +16,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6.2"
+python = "^3.8.2"
 fire = "^0.3.1"
 tqdm = "^4.55.0"
 filetype = "^1.0.7"
@@ -28,11 +28,12 @@ wordninja = "^2.0.0"
 ftfy = "^5.8"
 textract = "^1.6.3"
 sentence-transformers = "^0.4.1"
-rpyc = "^5.0.0"
-torchvision = "^0.8.2"
+rpyc = "^6.0.0"
+torchvision = "^0.17.2"
 Pillow = "^8.1.0"
 pywebcopy = "^6.3.0"
-hnswlib = "^0.4.0"
+hnswlib = "^0.8.0"
+igraph = "^0.11.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
