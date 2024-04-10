@@ -108,7 +108,7 @@ class CLIPVectorizer:
             new_corpus_vectors.append(json.loads(embedding_vector))
             new_corpus_paths.append(doc_path)
         len_new = len(new_corpus_vectors)
-        len_old = self.index.get_current_count()
+        len_old = self.index.element_count
         new_total_size = len_old + len_new
         if self.verbose:
             print("CURRENT INDEXED FILES:", len_old)
@@ -255,7 +255,7 @@ class TextVectorizer:
             new_corpus_vectors.append(json.loads(embedding_vector))
             new_corpus_paths.append(doc_path)
         len_new = len(new_corpus_vectors)
-        len_old = self.index.get_current_count()
+        len_old = self.index.element_count
         new_total_size = len_old + len_new
         if self.verbose:
             print("CURRENT INDEXED FILES:", len_old)
