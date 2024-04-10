@@ -62,6 +62,7 @@ async def open(query: str):
     
     if query.startswith('"') and query.endswith('"'):
         # search for file_names containing the query
+        # TODO: Add exact string matching for file text content
         query = query[1:len(query)-1] # removes ""
         results = ht.db.get_files_by_name(query)#.get_files(show_path=True, include_id=True)
     elif query.startswith('='):
