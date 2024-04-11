@@ -2,7 +2,7 @@
 
 HyperTag offers an expressive tag system and a powerful semantic search engine for all your files. Represent how you think using tags. Find what you look for using semantic search for your text documents (yes, even PDF's) and images. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
 
-**Objective Function**: Minimize time between a thought and access to all relevant files.
+**Goal**: Minimize time between a thought and access to all relevant files.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -12,7 +12,7 @@ HyperTag offers an expressive tag system and a powerful semantic search engine f
   - [Community](#community)
   - [Overview](#overview)
   - [CLI Functions](#cli-functions)
-    - [NeoVerse (WebApp)](#neoverse-webapp)
+    - [WebApp (Experimental)](#webapp-experimental)
     - [Import existing directory recursively](#import-existing-directory-recursively)
     - [Add file/s or URL/s manually](#add-files-or-urls-manually)
     - [Tag file/s  (with values)](#tag-files--with-values)
@@ -42,13 +42,13 @@ Available on [PyPI](https://pypi.org/project/hypertag/)
 
 `$ pip install hypertag` (supports both CPU only & CUDA accelerated execution!)
 
-## Community
+## Communication
 Reach me via Twitter @SeanPedersen96
 
 ## Overview
 HyperTag offers a slick CLI but more importantly it creates a directory called ```HyperTagFS``` which is a file system based representation of your files and tags using symbolic links and directories.
 
-**NeoVerse WebApp**: A slick HTML+JS client. Visualize, structure and search your personal NeoVerse in seconds powered by the HyperTag engine.
+**HyperTag WebApp (Experimental)**: A slick HTML+JS client. Visualize, structure and search your personal files in seconds powered by the HyperTag engine.
 
 **Directory Import**: Import your existing directory hierarchies using ```$ hypertag import path/to/directory```. HyperTag converts it automatically into a tag hierarchy using metatagging.
 
@@ -66,8 +66,8 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 
 ## CLI Functions
 
-### NeoVerse (WebApp)
-Spawn HTTP server for the client (called NeoVerse) running on localhost:23232
+### WebApp (Experimental)
+Spawn HTTP server for the HyperTag web client running on localhost:23232
 
 ```$ python3 -m hypertag.webapi```
 
@@ -215,8 +215,8 @@ Default is the user's home directory.
 - Added URLs are saved in `~/.config/hypertag/web_pages` for websites, others in `~/.config/hypertag/downloads`
 - Symbolic links are used to create the HyperTagFS directory structure
 - Semantic Search: boosted using [hnswlib](https://github.com/nmslib/hnswlib/)
-  - Text to text search is powered by the awesome [DistilBERT](https://arxiv.org/abs/1910.01108)
-  - Text to image & image to image search is powered by OpenAI's impressive [CLIP model](https://openai.com/blog/clip/)
+  - Text to text search is powered by the [DistilBERT](https://arxiv.org/abs/1910.01108)
+  - Text to image & image to image search is powered by OpenAI's [CLIP model](https://openai.com/blog/clip/)
 
 ## Development
 - Find prioritized issues here: [TODO List](https://github.com/Ravn-Tech/HyperTag/projects/1)
