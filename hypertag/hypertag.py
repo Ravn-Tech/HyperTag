@@ -13,7 +13,7 @@ from pywebcopy import WebPage, config  # type: ignore
 from .persistor import Persistor
 from .graph import graph
 from .utils import remove_dir, remove_symlink, download_url
-from .__init__ import __version__
+from .__init__ import __version__  # type: ignore
 
 
 class HyperTag:
@@ -331,7 +331,7 @@ class HyperTag:
         print("import_path_dirs", import_path_dirs)
         print("Adding tags...")
         for file_path in tqdm(added_file_paths):
-            self.auto_add_tags_from_path(os.path.abspath(str(file_path)), import_path_dirs, verbose)
+            self.auto_add_tags_from_path(file_path, import_path_dirs, verbose)
         self.db.conn.commit()
         self.mount(self.root_dir)
 
