@@ -9,7 +9,7 @@ HyperTag offers an expressive tag system and a powerful semantic search engine f
 **Table of Contents**
 - [HyperTag](#hypertag)
   - [Install](#install)
-  - [Community](#community)
+  - [Communication](#communication)
   - [Overview](#overview)
   - [CLI Functions](#cli-functions)
     - [WebApp (Experimental)](#webapp-experimental)
@@ -229,7 +229,7 @@ Default is the user's home directory.
 - Run all tests: ```$ pytest -v```
 - Run formatter: ```$ black hypertag/```
 - Run linter: ```$ flake8```
-- Run type checking: ```$ mypy **/*.py```
+- Run type checking: ```$ mypy hypertag --no-namespace-packages```
 - Run security checking: ```$ bandit --exclude tests/ -r .```
 - Codacy: [Dashboard](https://app.codacy.com/gh/SeanPedersen/HyperTag/dashboard?branch=master)
 - Run HyperTag: ```$ python -m hypertag```
