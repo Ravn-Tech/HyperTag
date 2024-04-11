@@ -1,23 +1,14 @@
 import os
-import re
 import sys
 from pathlib import Path
 import json
-import threading
 import torch
-import rpyc  # type: ignore
-from rpyc.utils.server import ThreadedServer  # type: ignore
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import subprocess
-from pathlib import Path
-from watchdog.observers import Observer  # type: ignore
-from watchdog.events import FileSystemEventHandler  # type: ignore
 from .hypertag import HyperTag
-from .persistor import Persistor
 from .vectorizer import TextVectorizer, CLIPVectorizer
-from .utils import update_symlink
 from .daemon import auto_importer, watch_hypertagfs
 
 
@@ -90,7 +81,7 @@ async def open(query: str):
 
 
 @app.get("/open/{file_id}")
-async def open(file_id: int):
+async def open_(file_id: int):
     filepath = Path(ht.db.get_file_path_by_id(file_id))  # convert to path and strip whitespace
 
     # Open the file
