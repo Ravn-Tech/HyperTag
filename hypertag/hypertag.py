@@ -9,8 +9,7 @@ from pathlib import Path
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 import rpyc  # type: ignore
-
-# from pywebcopy import WebPage, config  # type: ignore
+from pywebcopy import WebPage, config  # type: ignore
 from .persistor import Persistor
 from .graph import graph
 from .utils import remove_dir, remove_symlink, download_url
