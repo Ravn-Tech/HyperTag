@@ -271,8 +271,3 @@ def start(cpu, text, image):
     t = ThreadedServer(DaemonService, port=port)
     print(f"Starting DaemonService, listening on: localhost:{port}")
     t.start()
-
-
-if __name__ == "__main__":
-    print("Starting as standalone process")
-    start()
