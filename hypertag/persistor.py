@@ -8,7 +8,7 @@ from .utils import is_int
 
 
 class Persistor:
-    """ SQLite3 DB persistence class """
+    """SQLite3 DB persistence class"""
 
     def __init__(self):
         self.db_path = Path.home() / ".config/hypertag/"
@@ -199,7 +199,7 @@ class Persistor:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """ Destructor: closes connection and cursor """
+        """Destructor: closes connection and cursor"""
         self.close()
 
     def set_hypertagfs_dir(self, path: str):
@@ -418,9 +418,9 @@ class Persistor:
     def get_files(self, show_path, include_id=False):
         q_suffix = " FROM files" if include_id else " FROM files"
         if show_path:
-            self.c.execute("SELECT file_id, path"+q_suffix)
+            self.c.execute("SELECT file_id, path" + q_suffix)
         else:
-            self.c.execute("SELECT file_id, name"+q_suffix)
+            self.c.execute("SELECT file_id, name" + q_suffix)
         if include_id:
             data = self.c.fetchall()
         else:
@@ -428,7 +428,7 @@ class Persistor:
         return data
 
     def get_files_by_name(self, name_query):
-        self.c.execute("SELECT file_id FROM files WHERE name LIKE ?", ['%'+name_query+'%'])
+        self.c.execute("SELECT file_id FROM files WHERE name LIKE ?", ["%" + name_query + "%"])
         return [list(i) for i in self.c.fetchall()]
 
     def add_tag_to_file(self, tag_name_or_id: str, file_name_or_path: str, value=None):
@@ -443,7 +443,7 @@ class Persistor:
             file_id = self.get_file_id_by_name(file_name_or_path)
 
         self.add_tag_to_file_id(tag_id, file_id, value)
-    
+
     def add_tag_to_file_id(self, tag_name_or_id, file_id, value=None):
         if is_int(tag_name_or_id):
             tag_id = int(tag_name_or_id)
@@ -760,7 +760,7 @@ class Persistor:
             for match, ratio in matches:
                 length_dist = abs(len(match) - len(tag_name)) + 1
                 length_overlap = len(set(tag_name).intersection(match))
-                dist = ((length_dist ** 0.5) / ((length_overlap + 1) ** 3)) / (0.0001+ratio)
+                dist = ((length_dist**0.5) / ((length_overlap + 1) ** 3)) / (0.0001 + ratio)
                 if dist < best_dist:
                     best_dist = dist
                     best_match = match, ratio

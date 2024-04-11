@@ -22,7 +22,7 @@ logging.disable(logging.INFO)
 
 
 class CLIPVectorizer:
-    """ Multimodal vector space for images and texts powered by OpenAI's CLIP """
+    """Multimodal vector space for images and texts powered by OpenAI's CLIP"""
 
     def __init__(self, cpu=None, verbose=False):
         self.verbose = verbose
@@ -302,7 +302,7 @@ class TextVectorizer:
             return torch.Tensor([sentence_vectors]).tolist()
 
     def search(self, text_query: str, path=False, top_k=10, score=False, verbose=True):
-        """ Execute a semantic search that returns best matching text documents """
+        """Execute a semantic search that returns best matching text documents"""
         # Parse query: duplicate words marked with * (increases search weight)
         parsed_query = []
         rex = re.compile(r"\*+\w+")

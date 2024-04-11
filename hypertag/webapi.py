@@ -26,7 +26,7 @@ ht = HyperTag()
 text_vectorizer = None
 image_vectorizer = None
 
-app.mount("/site", StaticFiles(directory="./hypertag/client", html = True), name="site")
+app.mount("/site", StaticFiles(directory="./hypertag/client", html=True), name="site")
 
 
 @app.get("/get_file_name/{fileid}")
@@ -35,17 +35,21 @@ async def get_file_name(fileid: int):
     print("FILENAME", name)
     return {"result": name}
 
+
 @app.get("/files")
 async def files():
-    return {"files": [[x,y] for y,x in ht.db.get_files(False, True)]}
+    return {"files": [[x, y] for y, x in ht.db.get_files(False, True)]}
+
 
 @app.get("/tags")
 async def tags():
     return {"tags": ht.show(mode="tags", path=False, print_=False)}
 
+
 @app.get("/get_tags/{file_id}")
 async def get_tags(file_id: int):
     return {"tags": ht.db.get_tags_by_file_id(file_id)}
+
 
 @app.get("/add_tags/{file_id}/{tag_string}")
 async def add_tags(file_id: int, tag_string: str):
@@ -55,52 +59,61 @@ async def add_tags(file_id: int, tag_string: str):
         ht.db.add_tag_to_file_id(clean_tag, file_id)
     return {"tags": ht.db.get_tags_by_file_id(file_id)}
 
+
 @app.get("/find/{query}")
 async def open(query: str):
     query = str(query.replace("$", "/").strip())
     print("FIND:", query)
-    
+
     if query.startswith('"') and query.endswith('"'):
         # Search for file names containing the query
         # TODO: Add exact string matching for file text content
-        query = query[1:len(query)-1] # removes ""
-        results = ht.db.get_files_by_name(query)#.get_files(show_path=True, include_id=True)
-    elif query.startswith('='):
+        query = query[1 : len(query) - 1]  # removes ""
+        results = ht.db.get_files_by_name(query)  # .get_files(show_path=True, include_id=True)
+    elif query.startswith("="):
         # Tag search
         query = query.replace("=", "")
         query_list = query.split(" ")
         print("Query LIST", query_list)
-        results = list([ht.db.get_file_id_by_name(fname), fname] for fname in ht.query(query_list[0], *tuple(query_list[1:])))
+        results = list(
+            [ht.db.get_file_id_by_name(fname), fname]
+            for fname in ht.query(query_list[0], *tuple(query_list[1:]))
+        )
     else:
         # Semantic search
         file_names = ht.search(query, _return=True)
         print("Search LIST", file_names)
-        results = [[ht.db.get_file_id_by_name(fname), fname]for fname in file_names]
+        results = [[ht.db.get_file_id_by_name(fname), fname] for fname in file_names]
 
     print(results)
     return {"results": results}
 
+
 @app.get("/open/{file_id}")
 async def open(file_id: int):
-    filepath = Path(ht.db.get_file_path_by_id(file_id)) # convert to path and strip whitespace
+    filepath = Path(ht.db.get_file_path_by_id(file_id))  # convert to path and strip whitespace
 
     # Open the file
-    if sys.platform.startswith('darwin'): # macosx
-        subprocess.call(('open', filepath))
-    elif os.name == 'nt': # windows
+    if sys.platform.startswith("darwin"):  # macosx
+        subprocess.call(("open", filepath))
+    elif os.name == "nt":  # windows
         os.startfile(filepath)
-    elif os.name == 'posix': # linux
-        subprocess.call(('xdg-open', filepath))
+    elif os.name == "posix":  # linux
+        subprocess.call(("xdg-open", filepath))
     print("Opening", filepath, ".:.")
 
     return {"status": "OK", "path": str(filepath)}
 
-def get_service_name(): return "HyperTag - WebAPI Service"
+
+def get_service_name():
+    return "HyperTag - WebAPI Service"
+
 
 def compute_text_embedding(self, sentences_json):
     if text_vectorizer is not None:
         sentences = json.loads(sentences_json)
         return json.dumps(text_vectorizer.compute_text_embedding(sentences))
+
 
 def start(cpu, text, image):
     # Spawn Auto-Importer threads
@@ -124,9 +137,12 @@ def start(cpu, text, image):
 
     # HTTP
     port = 23232
-    print("Starting UVICORN HTTP Server .:. on Port:", port, "\nDomain-Dir: http://localhost:23232/site/")
+    print(
+        "Starting UVICORN HTTP Server .:. on Port:",
+        port,
+        "\nDomain-Dir: http://localhost:23232/site/",
+    )
     uvicorn.run(app, host="0.0.0.0", port=port)
-
 
 
 if __name__ == "__main__":

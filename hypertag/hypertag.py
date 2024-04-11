@@ -9,7 +9,8 @@ from pathlib import Path
 import fire  # type: ignore
 from tqdm import tqdm  # type: ignore
 import rpyc  # type: ignore
-#from pywebcopy import WebPage, config  # type: ignore
+
+# from pywebcopy import WebPage, config  # type: ignore
 from .persistor import Persistor
 from .graph import graph
 from .utils import remove_dir, remove_symlink, download_url
@@ -17,7 +18,7 @@ from .__init__ import __version__
 
 
 class HyperTag:
-    """ HyperTag CLI """
+    """HyperTag CLI"""
 
     def __init__(self):
         self.db = Persistor()
@@ -27,7 +28,7 @@ class HyperTag:
     def search_image(
         self, *text_queries: str, cpu=None, top_k=10, path=0, score=0, verbose=0, _return=0
     ):
-        """ Execute a semantic search that returns best matching images """
+        """Execute a semantic search that returns best matching images"""
         text_query = " ".join(text_queries)
         try:
             rpc = rpyc.connect("localhost", 18861)
@@ -45,14 +46,14 @@ class HyperTag:
             return results
 
     def index(self, text=None, image=None, rebuild=False, cache=False, cores: int = 0):
-        """ Vectorize image & text files (needed for semantic search) """
+        """Vectorize image & text files (needed for semantic search)"""
         if (image and text is None) or (image and text) or (not image and not text):
             self.index_images(rebuild)
         if (text and image is None) or (image and text) or (not image and not text):
             self.index_texts(rebuild, cache, cores)
 
     def index_images(self, rebuild=False):
-        """ Vectorize image files (needed for semantic search) """
+        """Vectorize image files (needed for semantic search)"""
         from .vectorizer import CLIPVectorizer, get_image_files
 
         if rebuild:
@@ -90,7 +91,7 @@ class HyperTag:
             img_vectorizer.update_index()
 
     def index_texts(self, rebuild=False, cache=False, cores: int = 0):
-        """ Vectorize text files (needed for semantic search) """
+        """Vectorize text files (needed for semantic search)"""
         # TODO: auto index on file addition (import)
         from .vectorizer import TextVectorizer, extract_clean_text, get_text_documents
 
@@ -164,7 +165,7 @@ class HyperTag:
             vectorizer.update_index()
 
     def search(self, text_queries: str, path=False, top_k=10, score=False, _return=False):
-        """ Combination of token_search and semantic_search """
+        """Combination of token_search and semantic_search"""
         text_query = text_queries
 
         token_matches = self.token_search(text_query, path, top_k, score, _return=True)
@@ -192,7 +193,7 @@ class HyperTag:
                 print(result)
 
     def token_search(self, text_queries: str, path=False, top_k=10, score=False, _return=False):
-        """ Execute an exact token matching search that returns best matching text documents """
+        """Execute an exact token matching search that returns best matching text documents"""
         # text_query = " ".join(text_queries)
         text_query = text_queries
         # print("ST", text_query)
@@ -204,7 +205,7 @@ class HyperTag:
                 print(result)
 
     def semantic_search(self, text_queries: str, path=False, top_k=10, score=False, _return=False):
-        """ Execute a semantic search that returns best matching text documents """
+        """Execute a semantic search that returns best matching text documents"""
         # text_query = " . ".join(text_queries)
         text_query = text_queries
         # print("SS", text_query)
@@ -225,15 +226,15 @@ class HyperTag:
             return results
 
     def add_auto_import_dir(self, path: str, index_images=False, index_texts=False):
-        """ Add path for auto import directory (watched by daemon) """
+        """Add path for auto import directory (watched by daemon)"""
         self.db.add_auto_import_directory(path, index_images, index_texts)
 
     def set_hypertagfs_dir(self, path: str):
-        """ Set path for HyperTagFS directory """
+        """Set path for HyperTagFS directory"""
         self.db.set_hypertagfs_dir(path)
 
     def mount(self, root_dir=None, parent_tag_id=None):
-        """ Generate HyperTagFS: tag representation using symlinks """
+        """Generate HyperTagFS: tag representation using symlinks"""
         if root_dir is None:
             root_dir = self.root_dir
         root_path = Path(root_dir)
@@ -336,7 +337,7 @@ class HyperTag:
         self.mount(self.root_dir)
 
     def remove(self, *file_names):
-        """ Remove files """
+        """Remove files"""
         for file_name in tqdm(file_names):
             self.db.remove_file(file_name)
             remove_symlink(self.root_dir, file_name)
@@ -372,7 +373,7 @@ class HyperTag:
             return file_path
 
     def add(self, *paths):
-        """ Add file/s or URL/s"""
+        """Add file/s or URL/s"""
         added = []
         for path in tqdm(paths):
             try:
@@ -390,7 +391,7 @@ class HyperTag:
         return added
 
     def tags(self, *file_names):
-        """ Display all tags of file/s """
+        """Display all tags of file/s"""
         tags = set()
         for file_name in file_names:
             tags.update(set(self.db.get_tags_by_file_name(file_name)))
@@ -398,7 +399,7 @@ class HyperTag:
             print(tag)
 
     def show(self, mode="tags", path=False, print_=True):
-        """ Display all tags (default), indexed files (mode=index) or files """
+        """Display all tags (default), indexed files (mode=index) or files"""
         if mode == "files":
             names = self.db.get_files(path)
         elif mode == "index":
@@ -449,7 +450,7 @@ class HyperTag:
         return results
 
     def tag(self, *args, remount=True, add=True, commit=True):
-        """ Tag file/s with tag/s """
+        """Tag file/s with tag/s"""
         # Parse arguments
         file_paths = []
         tags = []
@@ -483,7 +484,7 @@ class HyperTag:
             self.mount(self.root_dir)
 
     def untag(self, *args, remount=True, commit=True):
-        """ Untag (remove tag/s of) file/s with tag/s """
+        """Untag (remove tag/s of) file/s with tag/s"""
         # Parse arguments
         file_names = []
         tags = []
@@ -510,7 +511,7 @@ class HyperTag:
             self.mount(self.root_dir)
 
     def metatags(self, *tag_names):
-        """ Display all metatags (parents) of tag/s """
+        """Display all metatags (parents) of tag/s"""
         tags = set()
         for tag_name in tag_names:
             tags.update(set(self.db.get_meta_tags_by_tag_name(tag_name)))
@@ -518,7 +519,7 @@ class HyperTag:
             print(tag)
 
     def metatag(self, *args, remount=True, commit=True):
-        """ Tag tag/s with tag/s """
+        """Tag tag/s with tag/s"""
         # Parse arguments
         parent_tags = []
         tags = []
@@ -564,7 +565,7 @@ class HyperTag:
             self.mount(self.root_dir)
 
     def merge(self, tag_a, _into, tag_b):
-        """ Merges all associations (files & tags) of tag_a into tag_b """
+        """Merges all associations (files & tags) of tag_a into tag_b"""
         print("Merging tag", tag_a, "into", tag_b)
         self.db.merge_tags(tag_a, tag_b)
         remove_dir(self.root_dir, tag_a)
@@ -572,7 +573,7 @@ class HyperTag:
 
 
 def daemon(cpu=None, text=None, image=None):
-    """ Start daemon process """
+    """Start daemon process"""
     print("Starting up daemon...")
     from .daemon import start
     from multiprocessing import Process, set_start_method
@@ -584,7 +585,7 @@ def daemon(cpu=None, text=None, image=None):
 
 
 def help():
-    """ Get some help on how to use HyperTag """
+    """Get some help on how to use HyperTag"""
     print(
         """
     README: https://github.com/SeanPedersen/HyperTag/blob/master/README.md

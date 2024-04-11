@@ -4,7 +4,7 @@ from .persistor import Persistor
 
 
 def graph(layout="fruchterman_reingold", output=None):
-    """ Visualize the HyperTag Graph (saved at HyperTagFS root dir) """
+    """Visualize the HyperTag Graph (saved at HyperTagFS root dir)"""
 
     with Persistor() as db:
         if output is None:
