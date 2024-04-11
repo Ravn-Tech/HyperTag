@@ -61,18 +61,21 @@ async def open(query: str):
     print("FIND:", query)
     
     if query.startswith('"') and query.endswith('"'):
-        # search for file_names containing the query
+        # Search for file names containing the query
         # TODO: Add exact string matching for file text content
         query = query[1:len(query)-1] # removes ""
         results = ht.db.get_files_by_name(query)#.get_files(show_path=True, include_id=True)
     elif query.startswith('='):
-        # Tag Search
+        # Tag search
         query = query.replace("=", "")
         query_list = query.split(" ")
-        print("QLIST", query_list)
+        print("Query LIST", query_list)
         results = list([ht.db.get_file_id_by_name(fname), fname] for fname in ht.query(query_list[0], *tuple(query_list[1:])))
     else:
-        results = []
+        # Semantic search
+        file_names = ht.search(query, _return=True)
+        print("Search LIST", file_names)
+        results = [[ht.db.get_file_id_by_name(fname), fname]for fname in file_names]
 
     print(results)
     return {"results": results}
