@@ -238,3 +238,6 @@ Default is the user's home directory.
 
 **What is the point of HyperTag's existence?**<br/>
 HyperTag offers many unique features such as the import, semantic search, graphing and fuzzy matching functions that make it very convenient to use. All while HyperTag's code base staying relatively tiny at <2000 LOC compared to similar projects like [TMSU](https://github.com/oniony/TMSU) (>10,000 LOC in Go) and [SuperTag](https://github.com/amoffat/supertag) (>25,000 LOC in Rust), making it easy to hack on.
+
+**Semantic Search Alternatives**
+- [Semantra](https://github.com/freedmand/semantra)
