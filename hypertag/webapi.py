@@ -52,7 +52,7 @@ async def add_tags(file_id: int, tag_string: str):
 
 
 @app.get("/find/{query}")
-async def open(query: str):
+async def find(query: str):
     query = str(query.replace("$", "/").strip())
     print("FIND:", query)
 
