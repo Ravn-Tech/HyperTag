@@ -48,6 +48,7 @@ async def add_tags(file_id: int, tag_string: str):
     for tag in tag_string.split(","):
         clean_tag = tag.strip()
         ht.db.add_tag_to_file_id(clean_tag, file_id)
+    ht.db.conn.commit()
     return {"tags": ht.db.get_tags_by_file_id(file_id)}
 
 
