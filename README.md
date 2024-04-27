@@ -67,7 +67,7 @@ HyperTag offers a slick CLI but more importantly it creates a directory called `
 ## CLI Functions
 
 ### WebApp (Experimental)
-Spawn HTTP server for the HyperTag web client running on localhost:23232
+Spawn HTTP server for the HyperTag web client running on localhost:23236
 
 ```$ python3 -m hypertag.webapi```
 

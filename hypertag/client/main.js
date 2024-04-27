@@ -28,7 +28,7 @@ app.on('ready', function() {
   });
   console.log('Python Flask server started!');
   var rq = require('request-promise');
-  var mainAddr = 'http://localhost:23232';
+  var mainAddr = 'http://localhost:23236';
 
   var openWindow = function(){
     main_width = 920;

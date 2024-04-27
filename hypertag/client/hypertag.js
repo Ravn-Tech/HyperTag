@@ -14,7 +14,7 @@ function html_template(templateid, data){
 // call local python flask server backend api
 function call_python(function_text, callback){
   console.log("CALLING", function_text)
-  const request = new Request("http://localhost:23232/"+function_text);
+  const request = new Request("http://localhost:23236/"+function_text);
   const options = {
     method: "GET",
     headers: new Headers({'content-type': 'application/json'}),

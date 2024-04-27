@@ -127,11 +127,11 @@ def start(cpu, text, image):
         image_vectorizer = CLIPVectorizer(cpu, verbose=True)
 
     # HTTP
-    port = 23232
+    port = 23236
     print(
         "Starting UVICORN HTTP Server .:. on Port:",
         port,
-        "\nDomain-Dir: http://localhost:23232/site/",
+        f"\nDomain-Dir: http://localhost:{port}/site/",
     )
     uvicorn.run(app, host="0.0.0.0", port=port)
 
