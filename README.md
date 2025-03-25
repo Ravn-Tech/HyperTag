@@ -1,3 +1,7 @@
+# Archived
+
+Check out [Digger Solo](https://solo.digger.lol) for a similar project.
+
 # HyperTag
 
 HyperTag offers an expressive tag system and a powerful semantic search engine for all your files. Represent how you think using tags. Find what you look for using semantic search for your text documents (yes, even PDF's) and images. Instead of introducing proprietary file formats like other existing file organization tools, HyperTag just smoothly layers on top of your existing files without any fuss.
